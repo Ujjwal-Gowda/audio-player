@@ -16,6 +16,7 @@ const Signup: React.FC = () => {
     setError(null);
 
     try {
+      console.log("signuppage")
       const res = await axios.post("http://localhost:5000/auth/signup", form);
 
       // assume backend returns { token: "jwt..." }
