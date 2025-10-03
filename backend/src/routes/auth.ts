@@ -5,12 +5,13 @@ import * as dotenv from "dotenv"
 
 dotenv.config()
 
-const router=Router()
+const  router=Router()
 
 const users: { email:string; password: string }[] = [];
-router.post("/signup",async (res: Response,req:Request) => {
+router.post("/signup",async (req:Request,res: Response) => {
 
     try {
+        console.log("back")
         const{email,password}=  req.body;
         const hashedPassword= await bcrypt.hash(password,10);
         users.push({email, password : hashedPassword});
@@ -21,7 +22,7 @@ router.post("/signup",async (res: Response,req:Request) => {
 
 })
 
-router.get("/login",async (res:Response,req:Request) => {
+router.get("/login",async (req:Request,res:Response) => {
 
     try {
     const {email,password}=req.body;
