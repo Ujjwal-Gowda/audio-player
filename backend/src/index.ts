@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import authRoutes from "./routes/auth.ts" 
 import { authMiddleware } from "./middleware/auth.ts";
+import { connectDB } from "./db/connection.ts";
 
 dotenv.config();
 
@@ -24,9 +25,11 @@ app.get("/",()=>{
     console.log("api running");
 });
 
-
 const PORT=process.env.PORT
-app.listen(PORT,()=>{
+
+connectDB().then(() => {
+    app.listen(PORT,()=>{
     console.log("server is running on port http://localhost:"+ PORT);
-    
+    })
 })
+

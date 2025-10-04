@@ -11,13 +11,15 @@ const users: { email:string; password: string }[] = [];
 router.post("/signup",async (req:Request,res: Response) => {
 
     try {
-        console.log("back")
         const{email,password}=  req.body;
+        const exists=users.find(u=>u.email===email)
+        if(exists){
+            return res.status(400).json({error:"user already exists"})
+        }
         const hashedPassword= await bcrypt.hash(password,10);
         users.push({email, password : hashedPassword});
-        res.json({message:"userRegistered"})
         const token=jwt.sign({email},process.env.JWT_SECRET!, {expiresIn:"7d"})
-        res.json({ token });
+        res.json({ token,message:"userRegistered" });
     } catch (err) {
         return res.status(500).send({err:"signup unsuccessful"})
     }    

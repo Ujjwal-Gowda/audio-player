@@ -8,8 +8,7 @@
     "strict": true,
     "esModuleInterop": true,
     "allowImportingTsExtensions" :true,
-    "emitDeclarationOnly" : true,
-    "composite": true  
-  },
-  "include": ["src"]
+    "noEmit": true
+    },
+    "include": ["src"]
 }
