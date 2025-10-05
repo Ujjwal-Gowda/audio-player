@@ -5,7 +5,7 @@ import { AuthProvider } from './context/authcontext'
 import { BrowserRouter,Route,Routes } from 'react-router-dom'
 import Signup from './pages/signuppage'
 import Home from './pages/home'
-
+import Profile from './pages/profile'
 
 
 function App() {
@@ -25,7 +25,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
+      
       </BrowserRouter>
     </AuthProvider>
   )
