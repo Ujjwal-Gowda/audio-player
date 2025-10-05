@@ -1,4 +1,4 @@
-import './App.css'
+import './styles/App.css'
 import Login from './pages/loginpage'
 import ProtectedRoute from './component/protectedRoute'
 import { AuthProvider } from './context/authcontext'
