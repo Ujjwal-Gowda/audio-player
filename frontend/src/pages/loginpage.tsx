@@ -23,7 +23,7 @@ const Login = () => {
         password,
       });
       auth?.login(res.data.token);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err: any) {
       setError(err.response?.data?.error || "Login failed. Please try again.");
     } finally {

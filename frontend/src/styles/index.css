@@ -1,10 +1,10 @@
 body {
   margin: 0;
   display: flex;
-  justify-content: center;  /* centers horizontally */
-  align-items: center;      /* centers vertically */
-  min-height: 100vh;
-  background-color: #242424; /* light gray background instead of olive */
+  justify-content: center;  
+  align-items: center;      
+  height: 100vh;
+  background-color: #242424; 
 }
 
 #root {
