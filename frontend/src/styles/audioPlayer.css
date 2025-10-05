@@ -1,0 +1,42 @@
+.audio-player {
+  background: #222;
+  color: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 300px;
+  text-align: center;
+  margin: 50px auto;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.controls {
+  margin: 1rem 0;
+}
+
+button {
+  background: #1db954;
+  border: none;
+  border-radius: 50px;
+  padding: 0.7rem 1.5rem;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #1ed760;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+input[type="range"] {
+  flex-grow: 1;
+  cursor: pointer;
+  accent-color: #1db954;
+}

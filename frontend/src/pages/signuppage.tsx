@@ -7,7 +7,7 @@ import "../styles/auth.css";
 const Signup = () => {
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ name:"",email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +35,7 @@ const Signup = () => {
 
     try {
       const res = await axios.post("http://localhost:5000/auth/signup", {
+        name:form.name,
         email: form.email,
         password: form.password,
       });
@@ -62,7 +63,19 @@ const Signup = () => {
               <span>⚠️</span> {error}
             </div>
           )}
-
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              placeholder="Enter your full name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              disabled={loading}
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
