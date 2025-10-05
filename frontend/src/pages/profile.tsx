@@ -45,7 +45,6 @@ const Profile = () => {
 
   const handleThemeToggle = async (newTheme: "light" | "dark") => {
     setTheme(newTheme);
-    // Update theme preference in backend
     try {
       await axios.patch(
         "http://localhost:5000/user/theme",
@@ -98,12 +97,10 @@ const Profile = () => {
   return (
     <div className="profile-container">
       <div className="profile-card">
-        {/* Profile Avatar */}
         <div className="profile-avatar">
           <div className="avatar-circle">{getInitial(userData.name)}</div>
         </div>
 
-        {/* Profile Info */}
         <div className="profile-info">
           <div className="info-item">
             <span className="info-label">Name</span>
@@ -121,7 +118,6 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Theme Toggle */}
         <div className="theme-section">
           <span className="section-label">Appearance</span>
           <div className="theme-toggle">
@@ -130,8 +126,8 @@ const Profile = () => {
               onClick={() => handleThemeToggle("light")}
             >
               <svg
-                width="20"
-                height="20"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -156,8 +152,8 @@ const Profile = () => {
               onClick={() => handleThemeToggle("dark")}
             >
               <svg
-                width="20"
-                height="20"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -172,7 +168,6 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Logout Button */}
         <button className="logout-button" onClick={handleLogout}>
           <svg
             width="20"
