@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/authcontext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import ModernAudioPlayer from "../component/audioPlayer";
 import "../styles/home.css";
 
 const Home = () => {
@@ -43,7 +42,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>🎵 Music Player</h1>
+        <h1> Music Player</h1>
         <div className="header-actions">
           <button className="profile-btn" onClick={handleProfile}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -64,7 +63,6 @@ const Home = () => {
       </header>
 
       <main className="home-main">
-        <ModernAudioPlayer />
       </main>
 
       <footer className="home-footer">
