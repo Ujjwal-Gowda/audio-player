@@ -8,7 +8,6 @@ dotenv.config()
 
 const  router=Router()
 
-const users: { email:string; password: string }[] = [];
 router.post("/signup",async (req:Request,res: Response) => {
 
     try {
