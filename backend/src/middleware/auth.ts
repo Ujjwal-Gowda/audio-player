@@ -10,15 +10,17 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-        return res.status(401).json({ message: "token not found" });
+        return res.status(401).json({ message: "Token not found" });
     }
 
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
         const user = await User.findById(payload.userId).select("-password");
+        
         if (!user) {
-        return res.status(403).json({ message: "User not found" });
+            return res.status(403).json({ message: "User not found" });
         }
+        
         (req as any).user = user;
         next();
     } catch (error) {

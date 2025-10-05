@@ -11,13 +11,16 @@ const  router=Router()
 router.post("/signup",async (req:Request,res: Response) => {
 
     try {
-        const{email,password}=  req.body;
+        const{name,email,password}=  req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
         const exists=await User.findOne({email})
         if(exists){
             return res.status(400).json({error:"user already exists"})
         }
         const hashedPassword= await bcrypt.hash(password,10);
-        const user=new User({email,password:hashedPassword})
+        const user=new User({name,email,password:hashedPassword})
         user.save()
         const token=jwt.sign({userId:user._id},process.env.JWT_SECRET!, {expiresIn:"7d"})
         res.status(201).json({ token });
@@ -36,7 +39,7 @@ router.post("/login",async (req:Request,res:Response) => {
     if (!user){
         return res.status(400).json({error:"user not found"})
     }
-    const match=await bcrypt.compare(password,user.hashedPassword);
+    const match=await bcrypt.compare(password,user.password);
     if(!match){
         return res.status(400).json({error:"invalid password"})
     }
