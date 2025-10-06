@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import authRoutes from "./routes/auth.ts" 
 import { authMiddleware } from "./middleware/auth.ts";
 import { connectDB } from "./db/connection.ts";
+import userRoutes from "./routes/user.ts"
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.get("/",()=>{
     console.log("api running");
 });
 
+app.use("/user", authMiddleware, userRoutes)
 const PORT=process.env.PORT
 
 connectDB().then(() => {
