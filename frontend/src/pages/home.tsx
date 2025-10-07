@@ -3,7 +3,6 @@ import { AuthContext } from "../context/authcontext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MusicPlayer from "../component/musicPlayer";
-import "../styles/home.css";
 
 const Home = () => {
   const auth = useContext(AuthContext);
@@ -41,15 +40,17 @@ const Home = () => {
     <div style={{ position: 'relative', minHeight: '100vh' }}>
       {/* Header with absolute positioning */}
       <header style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         zIndex: 100,
-        padding: '1.5rem 2rem',
+        padding: '1rem 1.5rem',
         display: 'flex',
         justifyContent: 'flex-end',
-        gap: '1rem'
+        gap: '0.75rem',
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
+        backdropFilter: 'blur(10px)'
       }}>
         <button 
           onClick={handleProfile}
@@ -58,22 +59,23 @@ const Home = () => {
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             color: 'white',
-            padding: '0.75rem 1.5rem',
+            padding: '0.625rem 1.25rem',
             borderRadius: '12px',
             cursor: 'pointer',
-            fontSize: '0.95rem',
+            fontSize: '0.875rem',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            whiteSpace: 'nowrap'
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          Profile
+          <span style={{ display: window.innerWidth > 480 ? 'inline' : 'none' }}>Profile</span>
         </button>
         <button 
           onClick={handleLogout}
@@ -82,28 +84,44 @@ const Home = () => {
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             color: 'white',
-            padding: '0.75rem 1.5rem',
+            padding: '0.625rem 1.25rem',
             borderRadius: '12px',
             cursor: 'pointer',
-            fontSize: '0.95rem',
+            fontSize: '0.875rem',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            whiteSpace: 'nowrap'
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          Logout
+          <span style={{ display: window.innerWidth > 480 ? 'inline' : 'none' }}>Logout</span>
         </button>
       </header>
 
       {/* Music Player */}
       <MusicPlayer />
+      
+      <style>{`
+        @media (max-width: 480px) {
+          header {
+            padding: 0.75rem 1rem !important;
+          }
+          header button {
+            min-width: 44px !important;
+            padding: 0.75rem !important;
+          }
+          header button span {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
