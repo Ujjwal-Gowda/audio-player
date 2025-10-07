@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.ts"
 import { authMiddleware } from "./middleware/auth.ts";
 import { connectDB } from "./db/connection.ts";
 import userRoutes from "./routes/user.ts"
+import musicRoutes from "./routes/music.ts"
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ app.get("/",()=>{
 });
 
 app.use("/user", authMiddleware, userRoutes)
+
+app.use("/music", authMiddleware, musicRoutes)
 const PORT=process.env.PORT
 
 connectDB().then(() => {
