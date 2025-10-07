@@ -207,14 +207,15 @@ export class MusicService {
   static async search(query: string, limit = 20): Promise<Track[]> {
     // Get full tracks from Jamendo
     const jamendoTracks = await JamendoService.searchTracks(query, limit);
-    
     // Optionally enrich with Spotify metadata if needed
     return jamendoTracks;
   }
 
   static async getPopular(limit = 20): Promise<Track[]> {
     return JamendoService.getPopularTracks(limit);
+    
   }
+  
 
   static async getByGenre(genre: string, limit = 20): Promise<Track[]> {
     return JamendoService.getTracksByGenre(genre, limit);
