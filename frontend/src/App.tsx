@@ -6,7 +6,7 @@ import { BrowserRouter,Route,Routes } from 'react-router-dom'
 import Signup from './pages/signuppage'
 import Home from './pages/home'
 import Profile from './pages/profile'
-
+import Playlist from './pages/playlist'
 
 function App() {
 
@@ -33,6 +33,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+        path='"/playlist'
+        element={
+          <ProtectedRoute>
+            <Playlist/>
+          </ProtectedRoute>
+        }>
+        </Route>
       </Routes>
       
       </BrowserRouter>

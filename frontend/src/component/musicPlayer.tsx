@@ -18,6 +18,7 @@ export default function MusicPlayer() {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [showQueue, setShowQueue] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const playlist: Song[] = [
     {
@@ -47,6 +48,15 @@ export default function MusicPlayer() {
   ];
 
   const currentSong = playlist[currentSongIndex];
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -131,8 +141,8 @@ export default function MusicPlayer() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
-        paddingTop: '6rem',
+        padding: isMobile ? '1rem' : '2rem',
+        paddingTop: isMobile ? '5rem' : '6rem',
         transition: 'background 0.6s ease',
         position: 'relative',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -242,10 +252,10 @@ export default function MusicPlayer() {
         style={{
           background: 'rgba(255, 255, 255, 0.15)',
           backdropFilter: 'blur(20px)',
-          borderRadius: '32px',
-          padding: '2rem',
+          borderRadius: isMobile ? '24px' : '32px',
+          padding: isMobile ? '1.5rem' : '2.5rem',
           width: '100%',
-          maxWidth: '420px',
+          maxWidth: isMobile ? '360px' : '480px',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
           position: 'relative'
@@ -256,9 +266,9 @@ export default function MusicPlayer() {
           style={{
             width: '100%',
             aspectRatio: '1',
-            borderRadius: '20px',
+            borderRadius: isMobile ? '16px' : '20px',
             overflow: 'hidden',
-            marginBottom: '1.5rem',
+            marginBottom: isMobile ? '1.25rem' : '1.5rem',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
           }}
         >
@@ -275,9 +285,9 @@ export default function MusicPlayer() {
         </div>
 
         {/* Song Info */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
           <h2 style={{ 
-            fontSize: '1.5rem', 
+            fontSize: isMobile ? '1.25rem' : '1.5rem', 
             fontWeight: 700, 
             margin: '0 0 0.5rem 0', 
             color: 'white',
@@ -287,7 +297,7 @@ export default function MusicPlayer() {
             {currentSong.title}
           </h2>
           <p style={{ 
-            fontSize: '1rem', 
+            fontSize: isMobile ? '0.9rem' : '1rem', 
             color: 'rgba(255, 255, 255, 0.8)', 
             margin: 0,
             fontWeight: 500
@@ -297,7 +307,7 @@ export default function MusicPlayer() {
         </div>
 
         {/* Progress Bar */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <div
             style={{
               height: '4px',
@@ -334,7 +344,12 @@ export default function MusicPlayer() {
               }}
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            fontSize: isMobile ? '0.7rem' : '0.75rem', 
+            color: 'rgba(255, 255, 255, 0.7)' 
+          }}>
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -349,11 +364,16 @@ export default function MusicPlayer() {
               border: 'none',
               cursor: 'pointer',
               padding: '0.5rem',
-              transition: 'transform 0.2s'
+              transition: 'transform 0.2s',
+              minWidth: '44px',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             <Heart 
-              size={24} 
+              size={isMobile ? 22 : 24} 
               fill={favorites.includes(currentSong.id) ? 'white' : 'none'}
               color="white"
               style={{ 
@@ -363,7 +383,7 @@ export default function MusicPlayer() {
             />
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.75rem' : '1rem' }}>
             <button
               onClick={handlePrevious}
               style={{
@@ -371,16 +391,18 @@ export default function MusicPlayer() {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '50%',
-                width: '48px',
-                height: '48px',
+                width: isMobile ? '44px' : '52px',
+                height: isMobile ? '44px' : '52px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <SkipBack size={20} color="white" fill="white" />
+              <SkipBack size={isMobile ? 18 : 20} color="white" fill="white" />
             </button>
 
             <button
@@ -389,8 +411,8 @@ export default function MusicPlayer() {
                 background: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '64px',
-                height: '64px',
+                width: isMobile ? '56px' : '68px',
+                height: isMobile ? '56px' : '68px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -398,8 +420,10 @@ export default function MusicPlayer() {
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                 transition: 'all 0.2s'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {isPlaying ? <Pause size={28} color={currentSong.color} fill={currentSong.color} /> : <Play size={28} color={currentSong.color} fill={currentSong.color} />}
+              {isPlaying ? <Pause size={isMobile ? 24 : 28} color={currentSong.color} fill={currentSong.color} /> : <Play size={isMobile ? 24 : 28} color={currentSong.color} fill={currentSong.color} />}
             </button>
 
             <button
@@ -409,16 +433,18 @@ export default function MusicPlayer() {
                 backdropFilter: 'blur(10px)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '50%',
-                width: '48px',
-                height: '48px',
+                width: isMobile ? '44px' : '52px',
+                height: isMobile ? '44px' : '52px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <SkipForward size={20} color="white" fill="white" />
+              <SkipForward size={isMobile ? 18 : 20} color="white" fill="white" />
             </button>
           </div>
 
@@ -429,10 +455,15 @@ export default function MusicPlayer() {
               border: 'none',
               cursor: 'pointer',
               padding: '0.5rem',
-              transition: 'transform 0.2s'
+              transition: 'transform 0.2s',
+              minWidth: '44px',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            <Menu size={24} color="white" style={{ filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2))' }} />
+            <Menu size={isMobile ? 22 : 24} color="white" style={{ filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2))' }} />
           </button>
         </div>
       </div>
@@ -453,12 +484,6 @@ export default function MusicPlayer() {
         @keyframes pulse {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.02); }
-        }
-        
-        @media (max-width: 768px) {
-          body {
-            padding-top: 0;
-          }
         }
       `}</style>
     </div>
