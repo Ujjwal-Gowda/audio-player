@@ -34,7 +34,8 @@ function App() {
           }
         />
         <Route
-        path='"/playlist'
+        path='/playlist'
+
         element={
           <ProtectedRoute>
             <Playlist/>

@@ -4,8 +4,24 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MusicPlayer from "../component/musicPlayer";
 
+import SearchBar from "../component/searchBar";
+
+export interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  cover: string;
+  audioUrl: string;
+  duration: number;
+  genre?: string;
+}
+
 const Home = () => {
   const auth = useContext(AuthContext);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
 
@@ -47,6 +63,55 @@ const Home = () => {
   const handlePlaylist=()=>{
     navigate("/playlist");
   };
+  const loadPopularTracks = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/music/popular", {
+      headers: { Authorization: `Bearer ${auth?.token}` },
+      params: { limit: 20 }
+    });
+    
+    if (response.data.tracks && response.data.tracks.length > 0) {
+      setPlaylist(response.data.tracks);
+      setCurrentTrack(response.data.tracks[0]);
+      setCurrentIndex(0);
+    }
+  } catch (error) {
+    console.error("Failed to load popular tracks:", error);
+  }
+};
+
+const handleTrackSelect = (track: Track, trackList: Track[]) => {
+  const index = trackList.findIndex(t => t.id === track.id);
+  setPlaylist(trackList);
+  setCurrentTrack(track);
+  setCurrentIndex(index);
+};
+
+const handleNext = () => {
+  if (playlist.length === 0) return;
+  const nextIndex = (currentIndex + 1) % playlist.length;
+  setCurrentIndex(nextIndex);
+  setCurrentTrack(playlist[nextIndex]);
+};
+
+const handlePrevious = () => {
+  if (playlist.length === 0) return;
+  const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+  setCurrentIndex(prevIndex);
+  setCurrentTrack(playlist[prevIndex]);
+};
+
+const handleFavorite = async (trackId: string) => {
+  try {
+    await axios.post(
+      "http://localhost:5000/user/favorites",
+      { trackId },
+      { headers: { Authorization: `Bearer ${auth?.token}` } }
+    );
+  } catch (error) {
+    console.error("Failed to add favorite:", error);
+  }
+};
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh' }}>
@@ -172,7 +237,23 @@ const Home = () => {
       </header>
 
       {/* Music Player */}
-      <MusicPlayer />
+      {/* Search Bar */}
+<SearchBar 
+  onTrackSelect={handleTrackSelect}
+  onFavorite={handleFavorite}
+/>
+
+{/* Music Player */}
+{currentTrack && (
+  <MusicPlayer 
+    currentTrack={currentTrack}
+    playlist={playlist}
+    onNext={handleNext}
+    onPrevious={handlePrevious}
+    onTrackSelect={(track) => handleTrackSelect(track, playlist)}
+    onFavorite={handleFavorite}
+  />
+)}
     </div>
   );
 };
