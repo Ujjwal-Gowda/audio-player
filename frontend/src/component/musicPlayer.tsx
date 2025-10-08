@@ -1,53 +1,31 @@
 import { useState, useRef, useEffect } from 'react';
 import { Heart, Menu, SkipBack, SkipForward, Play, Pause } from 'lucide-react';
+import type { Track } from '../pages/home';
 
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
-  cover: string;
-  src: string;
-  color: string;
+interface MusicPlayerProps {
+  currentTrack: Track;
+  playlist: Track[];
+  onNext: () => void;
+  onPrevious: () => void;
+  onTrackSelect: (track: Track) => void;
+  onFavorite: (trackId: string) => void;
 }
 
-export default function MusicPlayer() {
+export default function MusicPlayer({ 
+  currentTrack, 
+  playlist, 
+  onNext, 
+  onPrevious, 
+  onTrackSelect,
+  onFavorite 
+}: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [showQueue, setShowQueue] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  const playlist: Song[] = [
-    {
-      id: 1,
-      title: "I See Fire",
-      artist: "Ed Sheeran",
-      cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&h=500&fit=crop",
-      src: "/songs/sample1.mp3",
-      color: "#f8b4d9"
-    },
-    {
-      id: 2,
-      title: "Midnight Dreams",
-      artist: "Luna Rose",
-      cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=500&fit=crop",
-      src: "/songs/sample2.mp3",
-      color: "#a8c5e8"
-    },
-    {
-      id: 3,
-      title: "Summer Breeze",
-      artist: "Ocean Waves",
-      cover: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=500&h=500&fit=crop",
-      src: "/songs/sample3.mp3",
-      color: "#ffd4a3"
-    }
-  ];
-
-  const currentSong = playlist[currentSongIndex];
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -62,9 +40,14 @@ export default function MusicPlayer() {
     const audio = audioRef.current;
     if (!audio) return;
 
+    audio.pause();
+    audio.load();
+    setIsPlaying(false);
+    setCurrentTime(0);
+
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => handleNext();
+    const handleEnded = () => onNext();
 
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
@@ -75,7 +58,7 @@ export default function MusicPlayer() {
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentSongIndex]);
+  }, [currentTrack, onNext]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -84,7 +67,7 @@ export default function MusicPlayer() {
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      audio.play().catch(err => console.error('Playback failed:', err));
     }
     setIsPlaying(!isPlaying);
   };
@@ -97,31 +80,15 @@ export default function MusicPlayer() {
     setCurrentTime(time);
   };
 
-  const handlePrevious = () => {
-    setCurrentSongIndex((prev) => (prev === 0 ? playlist.length - 1 : prev - 1));
-    setIsPlaying(true);
-    setTimeout(() => audioRef.current?.play(), 100);
+  const toggleFavorite = () => {
+    onFavorite(currentTrack.id);
+    setIsFavorited(!isFavorited);
   };
 
-  const handleNext = () => {
-    setCurrentSongIndex((prev) => (prev === playlist.length - 1 ? 0 : prev + 1));
-    setIsPlaying(true);
-    setTimeout(() => audioRef.current?.play(), 100);
-  };
-
-  const toggleFavorite = (songId: number) => {
-    setFavorites(prev => 
-      prev.includes(songId) 
-        ? prev.filter(id => id !== songId)
-        : [...prev, songId]
-    );
-  };
-
-  const selectSong = (index: number) => {
-    setCurrentSongIndex(index);
-    setIsPlaying(true);
+  const selectSong = (track: Track) => {
+    onTrackSelect(track);
     setShowQueue(false);
-    setTimeout(() => audioRef.current?.play(), 100);
+    setIsPlaying(true);
   };
 
   const formatTime = (time: number) => {
@@ -136,21 +103,20 @@ export default function MusicPlayer() {
   return (
     <div 
       style={{
-        background: `linear-gradient(135deg, ${currentSong.color} 0%, ${currentSong.color}dd 100%)`,
+        background: `linear-gradient(135deg, #f8b4d9 0%, #f8b4d9dd 100%)`,
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: isMobile ? '1rem' : '2rem',
-        paddingTop: isMobile ? '5rem' : '6rem',
+        paddingTop: isMobile ? '10rem' : '12rem',
         transition: 'background 0.6s ease',
         position: 'relative',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}
     >
-      <audio ref={audioRef} src={currentSong.src} />
+      <audio ref={audioRef} src={currentTrack.audioUrl} />
 
-      {/* Queue Overlay */}
       {showQueue && (
         <div
           style={{
@@ -181,7 +147,7 @@ export default function MusicPlayer() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#2d3748' }}>Next in Queue</h2>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#2d3748' }}>Queue</h2>
               <button
                 onClick={() => setShowQueue(false)}
                 style={{
@@ -194,10 +160,10 @@ export default function MusicPlayer() {
                 }}
               >×</button>
             </div>
-            {playlist.map((song, index) => (
+            {playlist.map((track) => (
               <div
-                key={song.id}
-                onClick={() => selectSong(index)}
+                key={track.id}
+                onClick={() => selectSong(track)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -205,16 +171,16 @@ export default function MusicPlayer() {
                   padding: '1rem',
                   borderRadius: '12px',
                   cursor: 'pointer',
-                  background: index === currentSongIndex ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+                  background: track.id === currentTrack.id ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
                   transition: 'background 0.2s',
                   marginBottom: '0.5rem'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = index === currentSongIndex ? 'rgba(0, 0, 0, 0.05)' : 'transparent'}
+                onMouseLeave={(e) => e.currentTarget.style.background = track.id === currentTrack.id ? 'rgba(0, 0, 0, 0.05)' : 'transparent'}
               >
                 <img 
-                  src={song.cover} 
-                  alt={song.title}
+                  src={track.cover || 'https://via.placeholder.com/50'} 
+                  alt={track.title}
                   style={{
                     width: '50px',
                     height: '50px',
@@ -223,17 +189,17 @@ export default function MusicPlayer() {
                   }}
                 />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: '#2d3748', marginBottom: '0.25rem' }}>{song.title}</div>
-                  <div style={{ fontSize: '0.875rem', color: '#718096' }}>{song.artist}</div>
+                  <div style={{ fontWeight: 600, color: '#2d3748', marginBottom: '0.25rem' }}>{track.title}</div>
+                  <div style={{ fontSize: '0.875rem', color: '#718096' }}>{track.artist}</div>
                 </div>
-                {index === currentSongIndex && isPlaying && (
+                {track.id === currentTrack.id && isPlaying && (
                   <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '16px' }}>
                     {[0, 1, 2].map(i => (
                       <div
                         key={i}
                         style={{
                           width: '3px',
-                          background: song.color,
+                          background: '#f8b4d9',
                           borderRadius: '2px',
                           animation: `bounce 1s ease-in-out infinite ${i * 0.2}s`
                         }}
@@ -247,7 +213,6 @@ export default function MusicPlayer() {
         </div>
       )}
 
-      {/* Main Player Card */}
       <div
         style={{
           background: 'rgba(255, 255, 255, 0.15)',
@@ -261,7 +226,6 @@ export default function MusicPlayer() {
           position: 'relative'
         }}
       >
-        {/* Album Art */}
         <div
           style={{
             width: '100%',
@@ -273,8 +237,8 @@ export default function MusicPlayer() {
           }}
         >
           <img 
-            src={currentSong.cover} 
-            alt={currentSong.title}
+            src={currentTrack.cover || 'https://via.placeholder.com/500'}
+            alt={currentTrack.title}
             style={{
               width: '100%',
               height: '100%',
@@ -284,7 +248,6 @@ export default function MusicPlayer() {
           />
         </div>
 
-        {/* Song Info */}
         <div style={{ textAlign: 'center', marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
           <h2 style={{ 
             fontSize: isMobile ? '1.25rem' : '1.5rem', 
@@ -294,7 +257,7 @@ export default function MusicPlayer() {
             letterSpacing: '-0.5px',
             textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
           }}>
-            {currentSong.title}
+            {currentTrack.title}
           </h2>
           <p style={{ 
             fontSize: isMobile ? '0.9rem' : '1rem', 
@@ -302,11 +265,10 @@ export default function MusicPlayer() {
             margin: 0,
             fontWeight: 500
           }}>
-            {currentSong.artist}
+            {currentTrack.artist}
           </p>
         </div>
 
-        {/* Progress Bar */}
         <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <div
             style={{
@@ -355,10 +317,9 @@ export default function MusicPlayer() {
           </div>
         </div>
 
-        {/* Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button
-            onClick={() => toggleFavorite(currentSong.id)}
+            onClick={toggleFavorite}
             style={{
               background: 'none',
               border: 'none',
@@ -374,7 +335,7 @@ export default function MusicPlayer() {
           >
             <Heart 
               size={isMobile ? 22 : 24} 
-              fill={favorites.includes(currentSong.id) ? 'white' : 'none'}
+              fill={isFavorited ? 'white' : 'none'}
               color="white"
               style={{ 
                 transition: 'all 0.2s',
@@ -385,7 +346,7 @@ export default function MusicPlayer() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.75rem' : '1rem' }}>
             <button
-              onClick={handlePrevious}
+              onClick={onPrevious}
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 backdropFilter: 'blur(10px)',
@@ -423,11 +384,11 @@ export default function MusicPlayer() {
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {isPlaying ? <Pause size={isMobile ? 24 : 28} color={currentSong.color} fill={currentSong.color} /> : <Play size={isMobile ? 24 : 28} color={currentSong.color} fill={currentSong.color} />}
+              {isPlaying ? <Pause size={isMobile ? 24 : 28} color="#f8b4d9" fill="#f8b4d9" /> : <Play size={isMobile ? 24 : 28} color="#f8b4d9" fill="#f8b4d9" />}
             </button>
 
             <button
-              onClick={handleNext}
+              onClick={onNext}
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 backdropFilter: 'blur(10px)',
