@@ -66,21 +66,21 @@ router.get(
 // });
 
 // Get tracks by genre
-router.get(
-  "/genre/:genre",
-  authMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const { genre } = req.params;
-      const { limit = 20 } = req.query;
+// router.get(
+//   "/genre/:genre",
+//   authMiddleware,
+//   async (req: Request, res: Response) => {
+//     try {
+//       const { genre } = req.params;
+//       const { limit = 20 } = req.query;
 
-      const tracks = await MusicService.getByGenre(genre, Number(limit));
-      res.json({ tracks, count: tracks.length });
-    } catch (error) {
-      console.error("Genre tracks error:", error);
-      res.status(500).json({ error: "Failed to fetch tracks by genre" });
-    }
-  },
-);
+//       const tracks = await MusicService.getByGenre(genre, Number(limit));
+//       res.json({ tracks, count: tracks.length });
+//     } catch (error) {
+//       console.error("Genre tracks error:", error);
+//       res.status(500).json({ error: "Failed to fetch tracks by genre" });
+//     }
+//   },
+// );
 
 export default router;

@@ -1,11 +1,9 @@
 // backend/src/services/musicApi.ts
-import axios from 'axios';
-import dotenv from "dotenv"
-dotenv.config()
-// Jamendo API for full-length free music
-const JAMENDO_CLIENT_ID = process.env.JAMENDO_CLIENT_ID || 'your_client_id';
-const JAMENDO_BASE_URL = 'https://api.jamendo.com/v3.0';
+import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 
+import SpotifyPreviewFinder from "spotify-preview-finder";
 // Spotify API for metadata and discovery
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
@@ -21,93 +19,6 @@ interface Track {
   genre?: string;
 }
 
-// Jamendo Service - Free full-length tracks
-export class JamendoService {
-  static async searchTracks(query: string, limit = 20): Promise<Track[]> {
-    try {
-      const response = await axios.get(`${JAMENDO_BASE_URL}/tracks`, {
-        params: {
-          client_id: JAMENDO_CLIENT_ID,
-          format: 'json',
-          limit,
-          search: query,
-          include: 'musicinfo',
-          audioformat: 'mp32' // or 'ogg'
-        }
-      });
-
-      return response.data.results.map((track: any) => ({
-        id: track.id,
-        title: track.name,
-        artist: track.artist_name,
-        album: track.album_name,
-        cover: track.album_image || track.image,
-        audioUrl: track.audio,
-        duration: track.duration,
-        genre: track.musicinfo?.tags?.genres?.[0]
-      }));
-    } catch (error) {
-      console.error('Jamendo API error:', error);
-      return [];
-    }
-  }
-
-  static async getPopularTracks(limit = 20): Promise<Track[]> {
-    try {
-      const response = await axios.get(`${JAMENDO_BASE_URL}/tracks`, {
-        params: {
-          client_id: JAMENDO_CLIENT_ID,
-          format: 'json',
-          limit,
-          order: 'popularity_week',
-          audioformat: 'mp32'
-        }
-      });
-
-      return response.data.results.map((track: any) => ({
-        id: track.id,
-        title: track.name,
-        artist: track.artist_name,
-        album: track.album_name,
-        cover: track.album_image || track.image,
-        audioUrl: track.audio,
-        duration: track.duration
-      }));
-    } catch (error) {
-      console.error('Jamendo API error:', error);
-      return [];
-    }
-  }
-
-  static async getTracksByGenre(genre: string, limit = 20): Promise<Track[]> {
-    try {
-      const response = await axios.get(`${JAMENDO_BASE_URL}/tracks`, {
-        params: {
-          client_id: JAMENDO_CLIENT_ID,
-          format: 'json',
-          limit,
-          tags: genre,
-          audioformat: 'mp32'
-        }
-      });
-
-      return response.data.results.map((track: any) => ({
-        id: track.id,
-        title: track.name,
-        artist: track.artist_name,
-        album: track.album_name,
-        cover: track.album_image || track.image,
-        audioUrl: track.audio,
-        duration: track.duration,
-        genre
-      }));
-    } catch (error) {
-      console.error('Jamendo API error:', error);
-      return [];
-    }
-  }
-}
-
 // Spotify Service - For rich metadata and recommendations
 export class SpotifyService {
   private static accessToken: string | null = null;
@@ -120,23 +31,25 @@ export class SpotifyService {
 
     try {
       const response = await axios.post(
-        'https://accounts.spotify.com/api/token',
-        'grant_type=client_credentials',
+        "https://accounts.spotify.com/api/token",
+        "grant_type=client_credentials",
         {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + Buffer.from(
-              `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
-            ).toString('base64')
-          }
-        }
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization:
+              "Basic " +
+              Buffer.from(
+                `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
+              ).toString("base64"),
+          },
+        },
       );
 
       this.accessToken = response.data.access_token;
-      this.tokenExpiry = Date.now() + (response.data.expires_in * 1000);
+      this.tokenExpiry = Date.now() + response.data.expires_in * 1000;
       return this.accessToken!;
     } catch (error) {
-      console.error('Spotify auth error:', error);
+      console.error("Spotify auth error:", error);
       throw error;
     }
   }
@@ -144,15 +57,15 @@ export class SpotifyService {
   static async searchTracks(query: string, limit = 20) {
     try {
       const token = await this.getAccessToken();
-      const response = await axios.get('https://api.spotify.com/v1/search', {
+      const response = await axios.get("https://api.spotify.com/v1/search", {
         params: {
           q: query,
-          type: 'track',
-          limit
+          type: "track",
+          limit,
         },
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       return response.data.tracks.items.map((track: any) => ({
@@ -161,70 +74,203 @@ export class SpotifyService {
         artist: track.artists[0].name,
         album: track.album.name,
         cover: track.album.images[0]?.url,
-        previewUrl: track.preview_url, // 30 seconds
+        previewUrl: track.preview_url,
         duration: track.duration_ms / 1000,
-        spotifyUrl: track.external_urls.spotify
+        spotifyUrl: track.external_urls.spotify,
       }));
     } catch (error) {
-      console.error('Spotify API error:', error);
+      console.error("Spotify API error:", error);
       return [];
     }
   }
 
-  static async getRecommendations( limit = 20) {
+  // static async getRecommendations(limit = 20) {
+  //   try {
+  //     const token = await this.getAccessToken();
+
+  //     // Use valid Spotify genre seeds
+  //     const genreSeeds = ["pop", "rock", "indie", "electronic", "hip-hop"];
+  //     const selectedSeeds = genreSeeds.slice(0, 5).join(",");
+
+  //     console.log(
+  //       "Fetching Spotify recommendations with seeds:",
+  //       selectedSeeds,
+  //     );
+
+  //     const response = await axios.get(
+  //       "https://api.spotify.com/v1/recommendations",
+  //       {
+  //         params: {
+  //           limit,
+  //           seed_genres: selectedSeeds,
+  //         },
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     console.log(`Spotify returned ${response.data.tracks.length} tracks`);
+
+  //     // Filter tracks that have preview URLs
+  //     const tracksWithPreview = response.data.tracks
+  //       .filter((track: any) => track.preview_url)
+  //       .map((track: any) => ({
+  //         id: track.id,
+  //         title: track.name,
+  //         artist: track.artists[0].name,
+  //         album: track.album.name,
+  //         cover: track.album.images[0]?.url || track.album.images[1]?.url,
+  //         audioUrl: track.preview_url,
+  //         duration: track.duration_ms / 1000,
+  //         genre: "various",
+  //       }));
+
+  //     console.log(`${tracksWithPreview.length} tracks have preview URLs`);
+  //     return tracksWithPreview;
+  //   } catch (error: any) {
+  //     console.error(
+  //       "Spotify recommendations error:",
+  //       error.response?.data || error.message,
+  //     );
+  //     return [];
+  //   }
+  // }
+
+  static async getRecommendations(limit = 20) {
+    try {
+      const token = await this.getAccessToken();
+
+      const genreSeeds = ["pop", "rock", "indie", "electronic", "hip-hop"];
+      const selectedSeeds = genreSeeds.slice(0, 5).join(",");
+
+      console.log(
+        "Fetching Spotify recommendations with seeds:",
+        selectedSeeds,
+      );
+
+      const response = await axios.get(
+        "https://api.spotify.com/v1/recommendations",
+        {
+          params: { limit, seed_genres: selectedSeeds },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      console.log(`Spotify returned ${response.data.tracks.length} tracks`);
+
+      // ✅ Use preview-finder for missing previews
+      const tracks: Track[] = [];
+      for (const track of response.data.tracks) {
+        let previewUrl = track.preview_url;
+
+        if (!previewUrl) {
+          try {
+            previewUrl = await SpotifyPreviewFinder.getPreviewUrl(track.id);
+            if (previewUrl)
+              console.log(`🎵 Found external preview for ${track.name}`);
+          } catch (err) {
+            console.warn(`No preview for ${track.name}`);
+          }
+        }
+
+        if (previewUrl) {
+          tracks.push({
+            id: track.id,
+            title: track.name,
+            artist: track.artists[0].name,
+            album: track.album.name,
+            cover: track.album.images[0]?.url || track.album.images[1]?.url,
+            audioUrl: previewUrl,
+            duration: track.duration_ms / 1000,
+            genre: "various",
+          });
+        }
+      }
+
+      console.log(`${tracks.length} tracks have valid previews`);
+      return tracks;
+    } catch (error: any) {
+      console.error(
+        "Spotify recommendations error:",
+        error.response?.data || error.message,
+      );
+      return [];
+    }
+  }
+
+  // Alternative: Get popular playlists for recommendations
+  static async getFeaturedPlaylists(limit = 20) {
     try {
       const token = await this.getAccessToken();
       const response = await axios.get(
-        'https://api.spotify.com/v1/recommendations',
+        "https://api.spotify.com/v1/browse/featured-playlists",
         {
-          params: {
-            limit,
-            seed_genres: 'pop,rock,jazz'
-
-          },
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
+          params: { limit: 5 },
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
 
-      return response.data.tracks.map((track: any) => ({
-        id: track.id,
-        title: track.name,
-        artist: track.artists[0].name,
-        album: track.album.name,
-        cover: track.album.images[0]?.url,
-        previewUrl: track.preview_url
-      }));
+      // Get tracks from first playlist
+      const playlistId = response.data.playlists.items[0].id;
+      const tracksResponse = await axios.get(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          params: { limit },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      return tracksResponse.data.items
+        .filter((item: any) => item.track?.preview_url)
+        .map((item: any) => ({
+          id: item.track.id,
+          title: item.track.name,
+          artist: item.track.artists[0].name,
+          album: item.track.album.name,
+          cover: item.track.album.images[0]?.url,
+          audioUrl: item.track.preview_url,
+          duration: item.track.duration_ms / 1000,
+        }));
     } catch (error) {
-      console.error('Spotify recommendations error:', error);
+      console.error("Spotify featured playlists error:", error);
       return [];
     }
   }
 }
 
-// Combined service that prioritizes Jamendo for playback
+// Combined service
 export class MusicService {
   static async search(query: string, limit = 20): Promise<Track[]> {
-    // Get full tracks from Jamendo
-    const jamendoTracks = await JamendoService.searchTracks(query, limit);
-    // Optionally enrich with Spotify metadata if needed
-    return jamendoTracks;
-  }
-    static async getRecommendation(): Promise<Track[]> {
-    const spotifyTracks = await SpotifyService.getRecommendations( 10);
-    return [...spotifyTracks];
+    return SpotifyService.searchTracks(query, limit);
   }
 
+  static async getRecommendation(): Promise<Track[]> {
+    try {
+      console.log("Fetching recommendations...");
+
+      // Try Spotify (30-second previews only)
+      const spotifyTracks = await SpotifyService.getRecommendations(10);
+
+      // Combine both sources
+      const allTracks = [...spotifyTracks];
+
+      // If neither works, try featured playlists as fallback
+      if (allTracks.length === 0) {
+        console.log("Trying featured playlists as fallback...");
+        const playlistTracks = await SpotifyService.getFeaturedPlaylists(20);
+        return playlistTracks;
+      }
+
+      return allTracks;
+    } catch (error) {
+      console.error("Error in getRecommendation:", error);
+      return [];
+    }
+  }
 
   static async getPopular(limit = 20): Promise<Track[]> {
-    return JamendoService.getPopularTracks(limit);
-    
-  }
-  
-
-  static async getByGenre(genre: string, limit = 20): Promise<Track[]> {
-    return JamendoService.getTracksByGenre(genre, limit);
+    return SpotifyService.getFeaturedPlaylists(limit);
   }
 }
 

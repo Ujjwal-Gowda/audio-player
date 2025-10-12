@@ -20,7 +20,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "spotify-preview-finder": "^2.1.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
