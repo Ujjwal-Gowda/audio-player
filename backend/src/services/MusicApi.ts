@@ -171,15 +171,16 @@ export class SpotifyService {
     }
   }
 
-  static async getRecommendations(seedTracks: string[], limit = 20) {
+  static async getRecommendations( limit = 20) {
     try {
       const token = await this.getAccessToken();
       const response = await axios.get(
         'https://api.spotify.com/v1/recommendations',
         {
           params: {
-            seed_tracks: seedTracks.join(','),
-            limit
+            limit,
+            seed_genres: 'pop,rock,jazz'
+
           },
           headers: {
             'Authorization': `Bearer ${token}`
@@ -210,6 +211,11 @@ export class MusicService {
     // Optionally enrich with Spotify metadata if needed
     return jamendoTracks;
   }
+    static async getRecommendation(): Promise<Track[]> {
+    const spotifyTracks = await SpotifyService.getRecommendations( 10);
+    return [...spotifyTracks];
+  }
+
 
   static async getPopular(limit = 20): Promise<Track[]> {
     return JamendoService.getPopularTracks(limit);

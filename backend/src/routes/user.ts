@@ -32,6 +32,35 @@ router.patch("/theme", authMiddleware, async (req: Request, res: Response) => {
 });
 
 
+router.post("/favorites", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { trackId } = req.body;
+    const userId = (req as any).user._id;
+
+    if (!trackId) {
+      return res.status(400).json({ error: "Track ID is required" });
+    }
+
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.favorites.includes(trackId)) {
+      return res.status(400).json({ error: "Track already in favorites" });
+    }
+
+    user.favorites.push(trackId);
+    await user.save();
+
+    res.json({ message: "Added to favorites", favorites: user.favorites });
+  } catch (error) {
+    console.error("Add favorite error:", error);
+    res.status(500).json({ error: "Failed to add favorite" });
+  }
+});
+
 // Remove track from favorites
 router.delete("/favorites/:trackId", authMiddleware, async (req: Request, res: Response) => {
   try {
@@ -53,25 +82,7 @@ router.delete("/favorites/:trackId", authMiddleware, async (req: Request, res: R
     res.status(500).json({ error: "Failed to remove favorite" });
   }
 });
-// Get user's favorites with IDs
-router.get("/favorites", authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user._id;
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
 
-    res.json({ 
-      favorites: user.favorites,
-      count: user.favorites.length 
-    });
-  } catch (error) {
-    console.error("Get favorites error:", error);
-    res.status(500).json({ error: "Failed to get favorites" });
-  }
-});
 
 
 export default router;

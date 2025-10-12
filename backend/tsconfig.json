@@ -7,8 +7,8 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "allowImportingTsExtensions" :true,
+    "allowImportingTsExtensions": true,
     "noEmit": true
-    },
-    "include": ["src"]
+  },
+  "include": ["src"]
 }
