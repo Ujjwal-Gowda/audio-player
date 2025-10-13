@@ -111,6 +111,11 @@ export class SpotifyService {
       const response = await axios.get(
         `https://api.spotify.com/v1/playlists/${playlistId}`,
         {
+          params: {
+            limit: 10,
+            fields:
+              "tracks.items(track(id,name,artists,album,preview_url,duration_ms))",
+          },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -178,12 +183,15 @@ export class MusicService {
     return SpotifyService.searchTracks(query, limit);
   }
 
-  static async getTopSong(): Promise<Track[]> {
+  static async getTopSong(limit = 10): Promise<Track[]> {
     try {
       console.log("Fetching recommendations...");
-
-      let tracks = await SpotifyService.getTopSongs();
+      let tracks = await SpotifyService.getTopSongs(
+        "3cEYpjA9oz9GiPac4AsH4n",
+        limit,
+      );
       console.log("Recommendations fetched successfully.", tracks);
+
       return tracks;
     } catch (error) {
       console.error("Error in getRecommendation:", error);
