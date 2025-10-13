@@ -12,6 +12,7 @@
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true
   },
   "include": ["src"]

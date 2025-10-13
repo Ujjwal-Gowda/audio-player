@@ -22,24 +22,24 @@ router.get("/search", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-// Get popular tracks
-router.get("/popular", authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const { limit = 20 } = req.query;
-    const tracks = await MusicService.getPopular(Number(limit));
-    res.json({ tracks, count: tracks.length });
-  } catch (error) {
-    console.error("Popular tracks error:", error);
-    res.status(500).json({ error: "Failed to fetch popular tracks" });
-  }
-});
+// // Get popular tracks
+// router.get("/popular", authMiddleware, async (req: Request, res: Response) => {
+//   try {
+//     const { limit = 20 } = req.query;
+//     const tracks = await MusicService.getPopular(Number(limit));
+//     res.json({ tracks, count: tracks.length });
+//   } catch (error) {
+//     console.error("Popular tracks error:", error);
+//     res.status(500).json({ error: "Failed to fetch popular tracks" });
+//   }
+// });
 
 router.get(
   "/recommendation",
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const tracks = await MusicService.getRecommendation();
+      const tracks = await MusicService.getTopSong();
       console.log(`Fetched ${tracks.length} tracks`);
       res.json(tracks);
     } catch (error: any) {

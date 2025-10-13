@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/authcontext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import MusicPlayer from "../component/musicPlayer";
-
 import SearchBar from "../component/searchBar";
+import { Play } from "lucide-react";
 
 export interface Track {
   id: string;
@@ -22,19 +22,36 @@ const Home = () => {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
 
   useEffect(() => {
     fetchUserTheme();
-    
+
+    // Check if coming from playlist with a track
+    if (location.state?.track && location.state?.playlist) {
+      setCurrentTrack(location.state.track);
+      setPlaylist(location.state.playlist);
+      const index = location.state.playlist.findIndex(
+        (t: Track) => t.id === location.state.track.id,
+      );
+      setCurrentIndex(index >= 0 ? index : 0);
+      setLoading(false);
+    } else {
+      // Load recommendations on mount
+      loadRecommendations();
+    }
+
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 480);
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [location.state]);
 
   const fetchUserTheme = async () => {
     try {
@@ -44,12 +61,59 @@ const Home = () => {
         },
       });
       const userTheme = response.data.user.themePref || "light";
+      setTheme(userTheme);
       document.documentElement.setAttribute("data-theme", userTheme);
     } catch (error) {
       console.error("Failed to fetch user theme:", error);
+      setTheme("light");
       document.documentElement.setAttribute("data-theme", "light");
     }
   };
+
+  const loadRecommendations = async () => {
+    setLoading(true);
+    try {
+      console.log("Loading recommendations...");
+      const response = await axios.get(
+        "http://localhost:5000/music/recommendation",
+        {
+          headers: { Authorization: `Bearer ${auth?.token}` },
+        },
+      );
+
+      console.log("Received tracks:", response.data);
+
+      if (response.data && response.data.length > 0) {
+        setPlaylist(response.data);
+        console.log(`✓ Loaded ${response.data.length} tracks`);
+      } else {
+        console.warn("No tracks returned from API");
+        // loadPopularTracks();
+      }
+    } catch (error) {
+      console.error("Failed to load recommendations:", error);
+      // loadPopularTracks();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // const loadPopularTracks = async () => {
+  //   try {
+  //     console.log("Loading popular tracks as fallback...");
+  //     const response = await axios.get("http://localhost:5000/music/popular", {
+  //       headers: { Authorization: `Bearer ${auth?.token}` },
+  //       params: { limit: 20 },
+  //     });
+
+  //     if (response.data.tracks && response.data.tracks.length > 0) {
+  //       setPlaylist(response.data.tracks);
+  //       console.log(`✓ Loaded ${response.data.tracks.length} popular tracks`);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to load popular tracks:", error);
+  //   }
+  // };
 
   const handleLogout = () => {
     auth?.logout();
@@ -60,174 +124,245 @@ const Home = () => {
     navigate("/profile");
   };
 
-  const handlePlaylist=()=>{
+  const handlePlaylist = () => {
     navigate("/playlist");
   };
-  const loadPopularTracks = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/music/popular", {
-      headers: { Authorization: `Bearer ${auth?.token}` },
-      params: { limit: 20 }
-    });
-    
-    if (response.data.tracks && response.data.tracks.length > 0) {
-      setPlaylist(response.data.tracks);
-      setCurrentTrack(response.data.tracks[0]);
-      setCurrentIndex(0);
+
+  const handleTrackSelect = (track: Track, trackList: Track[]) => {
+    const index = trackList.findIndex((t) => t.id === track.id);
+    setPlaylist(trackList);
+    setCurrentTrack(track);
+    setCurrentIndex(index);
+  };
+
+  const handleTrackClick = (track: Track) => {
+    const index = playlist.findIndex((t) => t.id === track.id);
+    setCurrentTrack(track);
+    setCurrentIndex(index);
+  };
+
+  const handleNext = () => {
+    if (playlist.length === 0) return;
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    setCurrentIndex(nextIndex);
+    setCurrentTrack(playlist[nextIndex]);
+  };
+
+  const handlePrevious = () => {
+    if (playlist.length === 0) return;
+    const prevIndex =
+      currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+    setCurrentIndex(prevIndex);
+    setCurrentTrack(playlist[prevIndex]);
+  };
+
+  const handleFavorite = async (trackId: string) => {
+    try {
+      await axios.post(
+        "http://localhost:5000/user/favorites",
+        { trackId },
+        { headers: { Authorization: `Bearer ${auth?.token}` } },
+      );
+      console.log("✓ Added to favorites");
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        console.log("Already in favorites");
+      } else {
+        console.error("Failed to add favorite:", error);
+      }
     }
-  } catch (error) {
-    console.error("Failed to load popular tracks:", error);
-  }
-};
+  };
 
-const handleTrackSelect = (track: Track, trackList: Track[]) => {
-  const index = trackList.findIndex(t => t.id === track.id);
-  setPlaylist(trackList);
-  setCurrentTrack(track);
-  setCurrentIndex(index);
-};
+  const bgGradient =
+    theme === "light"
+      ? "linear-gradient(135deg, #f8b4d9 0%, #f4d4ba 100%)"
+      : "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
 
-const handleNext = () => {
-  if (playlist.length === 0) return;
-  const nextIndex = (currentIndex + 1) % playlist.length;
-  setCurrentIndex(nextIndex);
-  setCurrentTrack(playlist[nextIndex]);
-};
+  const textColor = theme === "light" ? "#2d3748" : "#e2e8f0";
+  const cardBg =
+    theme === "light" ? "rgba(255, 255, 255, 0.9)" : "rgba(15, 20, 25, 0.9)";
+  const cardHoverBg =
+    theme === "light" ? "rgba(255, 255, 255, 1)" : "rgba(20, 25, 30, 1)";
 
-const handlePrevious = () => {
-  if (playlist.length === 0) return;
-  const prevIndex = currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
-  setCurrentIndex(prevIndex);
-  setCurrentTrack(playlist[prevIndex]);
-};
-
-const handleFavorite = async (trackId: string) => {
-  try {
-    await axios.post(
-      "http://localhost:5000/user/favorites",
-      { trackId },
-      { headers: { Authorization: `Bearer ${auth?.token}` } }
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: bgGradient,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
+        <div
+          style={{
+            width: "50px",
+            height: "50px",
+            border: "4px solid rgba(255, 255, 255, 0.3)",
+            borderTopColor: "white",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <p style={{ color: "white", fontSize: "1rem" }}>Loading music...</p>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
     );
-  } catch (error) {
-    console.error("Failed to add favorite:", error);
   }
-};
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh' }}>
-      {/* Header with fixed positioning */}
-      <header style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '0.75rem',
-        background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)',
-        backdropFilter: 'blur(10px)'
-      }}>
-        <button 
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        background: bgGradient,
+        transition: "background 0.3s ease",
+      }}
+    >
+      {/* Header */}
+      <header
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          padding: isMobile ? "0.75rem 1rem" : "1rem 1.5rem",
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: "0.75rem",
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 100%)",
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <button
           onClick={handleProfile}
           style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: isMobile ? '0.75rem' : '0.625rem 1.25rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
+            background: "rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            color: "white",
+            padding: isMobile ? "0.75rem" : "0.625rem 1.25rem",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
             fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.2s ease',
-            minWidth: isMobile ? '44px' : 'auto',
-            minHeight: '44px'
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            transition: "all 0.2s ease",
+            minWidth: isMobile ? "44px" : "auto",
+            minHeight: "44px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+            e.currentTarget.style.transform = "translateY(-2px)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+            e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
           {!isMobile && <span>Profile</span>}
         </button>
-        <button 
+        <button
           onClick={handlePlaylist}
           style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: isMobile ? '0.75rem' : '0.625rem 1.25rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
+            background: "rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            color: "white",
+            padding: isMobile ? "0.75rem" : "0.625rem 1.25rem",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
             fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.2s ease',
-            minWidth: isMobile ? '44px' : 'auto',
-            minHeight: '44px'
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            transition: "all 0.2s ease",
+            minWidth: isMobile ? "44px" : "auto",
+            minHeight: "44px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+            e.currentTarget.style.transform = "translateY(-2px)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+            e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <svg  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-           <path d="M16.8 5.73C15.3 4.6 14 3.64 14 1a1 1 0 0 0-2 0v13.52c-3.09-1.58-7.4 1.36-7.95 5a3.76 3.76 0 0 0 3.77 4.56c3.33 0 6.61-3.49 6.12-6.81C14 17 14 18 14 6c1.89 1.86 4 2.31 4 5v1a1 1 0 0 0 2 0c0-3-.25-4.07-3.2-6.27zm-6.13 15c-.63.94-3.07 2-4.18.84s-.25-3.08.84-4.17 3.14-1.87 4.18-.84.32 3.04-.84 4.19z" data-name="note music"/>
-            </svg>
-          {!isMobile && <span>PlayList</span>}
-        </button>      
-        <button 
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M16.8 5.73C15.3 4.6 14 3.64 14 1a1 1 0 0 0-2 0v13.52c-3.09-1.58-7.4 1.36-7.95 5a3.76 3.76 0 0 0 3.77 4.56c3.33 0 6.61-3.49 6.12-6.81C14 17 14 18 14 6c1.89 1.86 4 2.31 4 5v1a1 1 0 0 0 2 0c0-3-.25-4.07-3.2-6.27zm-6.13 15c-.63.94-3.07 2-4.18.84s-.25-3.08.84-4.17 3.14-1.87 4.18-.84.32 3.04-.84 4.19z" />
+          </svg>
+          {!isMobile && <span>Playlist</span>}
+        </button>
+        <button
           onClick={handleLogout}
           style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            padding: isMobile ? '0.75rem' : '0.625rem 1.25rem',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
+            background: "rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            color: "white",
+            padding: isMobile ? "0.75rem" : "0.625rem 1.25rem",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
             fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.2s ease',
-            minWidth: isMobile ? '44px' : 'auto',
-            minHeight: '44px'
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            transition: "all 0.2s ease",
+            minWidth: isMobile ? "44px" : "auto",
+            minHeight: "44px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+            e.currentTarget.style.transform = "translateY(-2px)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+            e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
@@ -236,24 +371,168 @@ const handleFavorite = async (trackId: string) => {
         </button>
       </header>
 
-      {/* Music Player */}
       {/* Search Bar */}
-<SearchBar 
-  onTrackSelect={handleTrackSelect}
-  onFavorite={handleFavorite}
-/>
+      <SearchBar
+        onTrackSelect={handleTrackSelect}
+        onFavorite={handleFavorite}
+      />
 
-{/* Music Player */}
-{currentTrack && (
-  <MusicPlayer 
-    currentTrack={currentTrack}
-    playlist={playlist}
-    onNext={handleNext}
-    onPrevious={handlePrevious}
-    onTrackSelect={(track) => handleTrackSelect(track, playlist)}
-    onFavorite={handleFavorite}
-  />
-)}
+      {/* Conditional Rendering: Masonry Grid or Music Player */}
+      {!currentTrack ? (
+        <div
+          style={{
+            paddingTop: "140px",
+            paddingBottom: "2rem",
+            paddingLeft: isMobile ? "1rem" : "2rem",
+            paddingRight: isMobile ? "1rem" : "2rem",
+            maxWidth: "1400px",
+            margin: "0 auto",
+          }}
+        >
+          <h2
+            style={{
+              color: "white",
+              fontSize: isMobile ? "1.5rem" : "2rem",
+              fontWeight: 700,
+              marginBottom: "1.5rem",
+              textAlign: "center",
+              textShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            Recommended for You
+          </h2>
+
+          {/* Masonry Grid */}
+          <div
+            style={{
+              columns: isMobile
+                ? "1"
+                : window.innerWidth < 768
+                  ? "2"
+                  : window.innerWidth < 1200
+                    ? "3"
+                    : "4",
+              columnGap: "1rem",
+              width: "100%",
+            }}
+          >
+            {playlist.map((track) => (
+              <div
+                key={track.id}
+                onClick={() => handleTrackClick(track)}
+                style={{
+                  background: cardBg,
+                  backdropFilter: "blur(20px)",
+                  borderRadius: "16px",
+                  padding: "1rem",
+                  marginBottom: "1rem",
+                  breakInside: "avoid",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  border: `1px solid ${theme === "light" ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)"}`,
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 24px rgba(0, 0, 0, 0.15)";
+                  e.currentTarget.style.background = cardHoverBg;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0, 0, 0, 0.1)";
+                  e.currentTarget.style.background = cardBg;
+                }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    paddingBottom: "100%",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  <img
+                    src={track.cover || "https://via.placeholder.com/300"}
+                    alt={track.title}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "0.75rem",
+                      right: "0.75rem",
+                      background: "rgba(255, 255, 255, 0.95)",
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                      opacity: 0,
+                      transition: "opacity 0.2s ease",
+                    }}
+                    className="play-button"
+                  >
+                    <Play size={20} color="#f8b4d9" fill="#f8b4d9" />
+                  </div>
+                </div>
+                <h3
+                  style={{
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    margin: "0 0 0.25rem 0",
+                    color: textColor,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {track.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.85rem",
+                    color: theme === "light" ? "#718096" : "#a0aec0",
+                    margin: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {track.artist}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <style>{`
+            div:hover .play-button {
+              opacity: 1 !important;
+            }
+          `}</style>
+        </div>
+      ) : (
+        <MusicPlayer
+          currentTrack={currentTrack}
+          playlist={playlist}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+          onTrackSelect={(track) => handleTrackSelect(track, playlist)}
+          onFavorite={handleFavorite}
+          theme={theme}
+        />
+      )}
     </div>
   );
 };

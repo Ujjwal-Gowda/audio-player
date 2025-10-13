@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.0",
     "nodemon": "^3.1.10",
-    "spotify-preview-finder": "^2.1.0"
+    "spotify-preview-finder": "^2.1.0",
+    "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -30,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
     "@types/react-dom": "^19.1.9",
+    "@types/spotify-web-api-node": "^5.0.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }

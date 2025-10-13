@@ -9,6 +9,7 @@ interface MusicPlayerProps {
   onPrevious: () => void;
   onTrackSelect: (track: Track) => void;
   onFavorite: (trackId: string) => void;
+  theme: "light" | "dark";
 }
 
 export default function MusicPlayer({
@@ -18,6 +19,7 @@ export default function MusicPlayer({
   onPrevious,
   onTrackSelect,
   onFavorite,
+  theme,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -26,6 +28,18 @@ export default function MusicPlayer({
   const [showQueue, setShowQueue] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  const bgGradient =
+    theme === "light"
+      ? "linear-gradient(135deg, #f8b4d9 0%, #f4d4ba 100%)"
+      : "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+
+  const cardBg =
+    theme === "light" ? "rgba(255, 255, 255, 0.15)" : "rgba(15, 20, 25, 0.3)";
+
+  const textColor = theme === "light" ? "white" : "#e2e8f0";
+  const textMuted =
+    theme === "light" ? "rgba(255, 255, 255, 0.8)" : "rgba(226, 232, 240, 0.7)";
 
   useEffect(() => {
     const handleResize = () => {
@@ -105,7 +119,7 @@ export default function MusicPlayer({
   return (
     <div
       style={{
-        background: `linear-gradient(135deg, #f8b4d9 0%, #f8b4d9dd 100%)`,
+        background: bgGradient,
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
@@ -139,7 +153,7 @@ export default function MusicPlayer({
         >
           <div
             style={{
-              background: "white",
+              background: theme === "light" ? "white" : "#1a1a2e",
               borderRadius: "24px 24px 0 0",
               width: "100%",
               maxHeight: "70vh",
@@ -157,7 +171,13 @@ export default function MusicPlayer({
                 marginBottom: "1.5rem",
               }}
             >
-              <h2 style={{ margin: 0, fontSize: "1.5rem", color: "#2d3748" }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: "1.5rem",
+                  color: theme === "light" ? "#2d3748" : "#e2e8f0",
+                }}
+              >
                 Queue
               </h2>
               <button
@@ -167,7 +187,7 @@ export default function MusicPlayer({
                   border: "none",
                   fontSize: "2rem",
                   cursor: "pointer",
-                  color: "#718096",
+                  color: theme === "light" ? "#718096" : "#a0aec0",
                   padding: 0,
                 }}
               >
@@ -187,18 +207,25 @@ export default function MusicPlayer({
                   cursor: "pointer",
                   background:
                     track.id === currentTrack.id
-                      ? "rgba(0, 0, 0, 0.05)"
+                      ? theme === "light"
+                        ? "rgba(0, 0, 0, 0.05)"
+                        : "rgba(255, 255, 255, 0.05)"
                       : "transparent",
                   transition: "background 0.2s",
                   marginBottom: "0.5rem",
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "rgba(0, 0, 0, 0.05)")
+                  (e.currentTarget.style.background =
+                    theme === "light"
+                      ? "rgba(0, 0, 0, 0.05)"
+                      : "rgba(255, 255, 255, 0.05)")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.background =
                     track.id === currentTrack.id
-                      ? "rgba(0, 0, 0, 0.05)"
+                      ? theme === "light"
+                        ? "rgba(0, 0, 0, 0.05)"
+                        : "rgba(255, 255, 255, 0.05)"
                       : "transparent")
                 }
               >
@@ -216,13 +243,18 @@ export default function MusicPlayer({
                   <div
                     style={{
                       fontWeight: 600,
-                      color: "#2d3748",
+                      color: theme === "light" ? "#2d3748" : "#e2e8f0",
                       marginBottom: "0.25rem",
                     }}
                   >
                     {track.title}
                   </div>
-                  <div style={{ fontSize: "0.875rem", color: "#718096" }}>
+                  <div
+                    style={{
+                      fontSize: "0.875rem",
+                      color: theme === "light" ? "#718096" : "#a0aec0",
+                    }}
+                  >
                     {track.artist}
                   </div>
                 </div>
@@ -240,7 +272,7 @@ export default function MusicPlayer({
                         key={i}
                         style={{
                           width: "3px",
-                          background: "#f8b4d9",
+                          background: theme === "light" ? "#f8b4d9" : "#9f7aea",
                           borderRadius: "2px",
                           animation: `bounce 1s ease-in-out infinite ${i * 0.2}s`,
                         }}
@@ -256,14 +288,14 @@ export default function MusicPlayer({
 
       <div
         style={{
-          background: "rgba(255, 255, 255, 0.15)",
+          background: cardBg,
           backdropFilter: "blur(20px)",
           borderRadius: isMobile ? "24px" : "32px",
           padding: isMobile ? "1.5rem" : "2.5rem",
           width: "100%",
           maxWidth: isMobile ? "360px" : "480px",
           boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          border: `1px solid ${theme === "light" ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 255, 255, 0.1)"}`,
           position: "relative",
         }}
       >
@@ -300,7 +332,7 @@ export default function MusicPlayer({
               fontSize: isMobile ? "1.25rem" : "1.5rem",
               fontWeight: 700,
               margin: "0 0 0.5rem 0",
-              color: "white",
+              color: textColor,
               letterSpacing: "-0.5px",
               textShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
             }}
@@ -310,7 +342,7 @@ export default function MusicPlayer({
           <p
             style={{
               fontSize: isMobile ? "0.9rem" : "1rem",
-              color: "rgba(255, 255, 255, 0.8)",
+              color: textMuted,
               margin: 0,
               fontWeight: 500,
             }}
@@ -323,7 +355,10 @@ export default function MusicPlayer({
           <div
             style={{
               height: "4px",
-              background: "rgba(255, 255, 255, 0.2)",
+              background:
+                theme === "light"
+                  ? "rgba(255, 255, 255, 0.2)"
+                  : "rgba(255, 255, 255, 0.1)",
               borderRadius: "2px",
               position: "relative",
               marginBottom: "0.5rem",
@@ -333,10 +368,10 @@ export default function MusicPlayer({
               style={{
                 height: "100%",
                 width: `${progressPercentage}%`,
-                background: "white",
+                background: theme === "light" ? "white" : "#9f7aea",
                 borderRadius: "2px",
                 transition: "width 0.1s linear",
-                boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+                boxShadow: `0 0 10px ${theme === "light" ? "rgba(255, 255, 255, 0.5)" : "rgba(159, 122, 234, 0.5)"}`,
               }}
             />
             <input
@@ -361,7 +396,7 @@ export default function MusicPlayer({
               display: "flex",
               justifyContent: "space-between",
               fontSize: isMobile ? "0.7rem" : "0.75rem",
-              color: "rgba(255, 255, 255, 0.7)",
+              color: textMuted,
             }}
           >
             <span>{formatTime(currentTime)}</span>
@@ -393,8 +428,10 @@ export default function MusicPlayer({
           >
             <Heart
               size={isMobile ? 22 : 24}
-              fill={isFavorited ? "white" : "none"}
-              color="white"
+              fill={
+                isFavorited ? (theme === "light" ? "white" : "#9f7aea") : "none"
+              }
+              color={theme === "light" ? "white" : "#9f7aea"}
               style={{
                 transition: "all 0.2s",
                 filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2))",
@@ -412,9 +449,12 @@ export default function MusicPlayer({
             <button
               onClick={onPrevious}
               style={{
-                background: "rgba(255, 255, 255, 0.2)",
+                background:
+                  theme === "light"
+                    ? "rgba(255, 255, 255, 0.2)"
+                    : "rgba(159, 122, 234, 0.2)",
                 backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
+                border: `1px solid ${theme === "light" ? "rgba(255, 255, 255, 0.3)" : "rgba(159, 122, 234, 0.3)"}`,
                 borderRadius: "50%",
                 width: isMobile ? "44px" : "52px",
                 height: isMobile ? "44px" : "52px",
@@ -431,13 +471,17 @@ export default function MusicPlayer({
                 (e.currentTarget.style.transform = "scale(1)")
               }
             >
-              <SkipBack size={isMobile ? 18 : 20} color="white" fill="white" />
+              <SkipBack
+                size={isMobile ? 18 : 20}
+                color={textColor}
+                fill={textColor}
+              />
             </button>
 
             <button
               onClick={togglePlay}
               style={{
-                background: "white",
+                background: theme === "light" ? "white" : "#9f7aea",
                 border: "none",
                 borderRadius: "50%",
                 width: isMobile ? "56px" : "68px",
@@ -446,7 +490,7 @@ export default function MusicPlayer({
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)",
+                boxShadow: `0 8px 24px ${theme === "light" ? "rgba(0, 0, 0, 0.3)" : "rgba(159, 122, 234, 0.4)"}`,
                 transition: "all 0.2s",
               }}
               onMouseEnter={(e) =>
@@ -459,14 +503,14 @@ export default function MusicPlayer({
               {isPlaying ? (
                 <Pause
                   size={isMobile ? 24 : 28}
-                  color="#f8b4d9"
-                  fill="#f8b4d9"
+                  color={theme === "light" ? "#f8b4d9" : "white"}
+                  fill={theme === "light" ? "#f8b4d9" : "white"}
                 />
               ) : (
                 <Play
                   size={isMobile ? 24 : 28}
-                  color="#f8b4d9"
-                  fill="#f8b4d9"
+                  color={theme === "light" ? "#f8b4d9" : "white"}
+                  fill={theme === "light" ? "#f8b4d9" : "white"}
                 />
               )}
             </button>
@@ -474,9 +518,12 @@ export default function MusicPlayer({
             <button
               onClick={onNext}
               style={{
-                background: "rgba(255, 255, 255, 0.2)",
+                background:
+                  theme === "light"
+                    ? "rgba(255, 255, 255, 0.2)"
+                    : "rgba(159, 122, 234, 0.2)",
                 backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
+                border: `1px solid ${theme === "light" ? "rgba(255, 255, 255, 0.3)" : "rgba(159, 122, 234, 0.3)"}`,
                 borderRadius: "50%",
                 width: isMobile ? "44px" : "52px",
                 height: isMobile ? "44px" : "52px",
@@ -495,8 +542,8 @@ export default function MusicPlayer({
             >
               <SkipForward
                 size={isMobile ? 18 : 20}
-                color="white"
-                fill="white"
+                color={textColor}
+                fill={textColor}
               />
             </button>
           </div>
@@ -518,7 +565,7 @@ export default function MusicPlayer({
           >
             <Menu
               size={isMobile ? 22 : 24}
-              color="white"
+              color={textColor}
               style={{ filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2))" }}
             />
           </button>
