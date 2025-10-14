@@ -5,7 +5,7 @@ import axios from "axios";
 import MusicPlayer from "../component/musicPlayer";
 import SearchBar from "../component/searchBar";
 import { Play } from "lucide-react";
-import { API_ENDPOINTS, authHeaders } from "../config/api";
+import { API_ENDPOINTS } from "../config/api";
 
 export interface Track {
   id: string;
