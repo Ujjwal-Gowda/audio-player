@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import { useNavigate, Link } from "react-router-dom";
-
+import { API_ENDPOINTS, authHeaders } from "../config/api";
 const Signup = () => {
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
@@ -46,14 +46,11 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://audio-player-058s.onrender.com/auth/signup",
-        {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-        },
-      );
+      const res = await axios.post(API_ENDPOINTS.SIGNUP, {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
 
       auth?.login(res.data.token);
       navigate("/");

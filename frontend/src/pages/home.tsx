@@ -5,6 +5,7 @@ import axios from "axios";
 import MusicPlayer from "../component/musicPlayer";
 import SearchBar from "../component/searchBar";
 import { Play } from "lucide-react";
+import { API_ENDPOINTS, authHeaders } from "../config/api";
 
 export interface Track {
   id: string;
@@ -57,14 +58,11 @@ const Home = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get(
-        "https://audio-player-058s.onrender.com/protected",
-        {
-          headers: {
-            Authorization: `Bearer ${auth?.token}`,
-          },
+      const response = await axios.get(API_ENDPOINTS.USER_THEME, {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
         },
-      );
+      });
       const userTheme = response.data.user.themePref || "light";
       setTheme(userTheme);
       document.documentElement.setAttribute("data-theme", userTheme);
@@ -77,12 +75,9 @@ const Home = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await axios.get(
-        "https://audio-player-058s.onrender.com/user/favorites",
-        {
-          headers: { Authorization: `Bearer ${auth?.token}` },
-        },
-      );
+      const response = await axios.get(API_ENDPOINTS.USER_FAVORITES, {
+        headers: { Authorization: `Bearer ${auth?.token}` },
+      });
       console.log("Fetched favorites:", response.data.favorites);
       setFavorites(response.data.favorites || []);
     } catch (error) {
@@ -95,12 +90,9 @@ const Home = () => {
     setLoading(true);
     try {
       console.log("Loading new Releases");
-      const response = await axios.get(
-        "https://audio-player-058s.onrender.com/music/newreleases",
-        {
-          headers: { Authorization: `Bearer ${auth?.token}` },
-        },
-      );
+      const response = await axios.get(API_ENDPOINTS.MUSIC_NEW_RELEASES, {
+        headers: { Authorization: `Bearer ${auth?.token}` },
+      });
 
       console.log("Received tracks:", response.data);
 
@@ -167,7 +159,7 @@ const Home = () => {
         // Remove from favorites
         console.log("Removing from favorites...");
         const response = await axios.delete(
-          `https://audio-player-058s.onrender.com/user/favorites/${trackId}`,
+          API_ENDPOINTS.FAVORITES_DELETE(trackId),
           {
             headers: { Authorization: `Bearer ${auth?.token}` },
           },
@@ -185,7 +177,7 @@ const Home = () => {
         // Add to favorites
         console.log("Adding to favorites...");
         const response = await axios.post(
-          "https://audio-player-058s.onrender.com/user/favorites",
+          API_ENDPOINTS.FAVORITES_ADD,
           { trackId },
           { headers: { Authorization: `Bearer ${auth?.token}` } },
         );

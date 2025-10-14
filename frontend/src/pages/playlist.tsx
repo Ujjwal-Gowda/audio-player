@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Play, Heart, Trash2, ArrowLeft } from "lucide-react";
 import type { Track } from "./home";
-
+import { API_ENDPOINTS } from "../config/api";
 const Playlist = () => {
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
@@ -27,14 +27,11 @@ const Playlist = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get(
-        "https://audio-player-058s.onrender.com/protected",
-        {
-          headers: {
-            Authorization: `Bearer ${auth?.token}`,
-          },
+      const response = await axios.get(API_ENDPOINTS.PROTECTED, {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
         },
-      );
+      });
       const userTheme = response.data.user.themePref || "light";
       setTheme(userTheme);
     } catch (error) {
@@ -45,12 +42,9 @@ const Playlist = () => {
   const fetchFavorites = async () => {
     try {
       console.log("📋 Fetching favorites...");
-      const response = await axios.get(
-        `https://audio-player-058s.onrender.com/user/favorites`,
-        {
-          headers: { Authorization: `Bearer ${auth?.token}` },
-        },
-      );
+      const response = await axios.get(API_ENDPOINTS.FAVORITES_ADD, {
+        headers: { Authorization: `Bearer ${auth?.token}` },
+      });
 
       const favoriteIds: string[] = response.data.favorites || [];
       console.log(`📋 Found ${favoriteIds.length} favorite IDs:`, favoriteIds);
@@ -65,12 +59,9 @@ const Playlist = () => {
       const trackPromises = favoriteIds.map(async (id) => {
         try {
           console.log(`🎵 Fetching track: ${id}`);
-          const response = await axios.get(
-            `https://audio-player-058s.onrender.com/music/getid/${id}`,
-            {
-              headers: { Authorization: `Bearer ${auth?.token}` },
-            },
-          );
+          const response = await axios.get(API_ENDPOINTS.MUSIC_GET_TRACK(id), {
+            headers: { Authorization: `Bearer ${auth?.token}` },
+          });
           console.log(`✓ Fetched track ${id}:`, response.data.title);
           return response.data;
         } catch (error: any) {
@@ -101,12 +92,9 @@ const Playlist = () => {
         console.log(`🧹 Cleaning up ${invalidIds.length} invalid favorites...`);
         for (const invalidId of invalidIds) {
           try {
-            await axios.delete(
-              `https://audio-player-058s.onrender.com/user/favorites/${invalidId}`,
-              {
-                headers: { Authorization: `Bearer ${auth?.token}` },
-              },
-            );
+            await axios.delete(API_ENDPOINTS.FAVORITES_DELETE(invalidId), {
+              headers: { Authorization: `Bearer ${auth?.token}` },
+            });
             console.log(`✓ Removed invalid favorite: ${invalidId}`);
           } catch (err) {
             console.error(
@@ -127,14 +115,11 @@ const Playlist = () => {
   const handleRemoveFavorite = async (trackId: string) => {
     try {
       console.log(`🗑️ Removing favorite: ${trackId}`);
-      await axios.delete(
-        `https://audio-player-058s.onrender.com/user/favorites/${trackId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${auth?.token}`,
-          },
+      await axios.delete(API_ENDPOINTS.FAVORITES_DELETE(trackId), {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
         },
-      );
+      });
 
       setFavorites((prev) => prev.filter((track) => track.id !== trackId));
       console.log("✓ Removed from favorites");

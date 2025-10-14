@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import { useNavigate, Link } from "react-router-dom";
-
+import { API_ENDPOINTS, authHeaders } from "../config/api";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,10 +32,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://audio-player-058s.onrender.com/auth/login",
-        { email, password },
-      );
+      const res = await axios.post(API_ENDPOINTS.LOGIN, { email, password });
       auth?.login(res.data.token);
       navigate("/");
     } catch (err: any) {
