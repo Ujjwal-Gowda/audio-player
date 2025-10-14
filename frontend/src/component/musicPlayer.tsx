@@ -10,6 +10,7 @@ interface MusicPlayerProps {
   onTrackSelect: (track: Track) => void;
   onFavorite: (trackId: string) => void;
   theme: "light" | "dark";
+  isFavorited: boolean;
 }
 
 export default function MusicPlayer({
@@ -20,6 +21,7 @@ export default function MusicPlayer({
   onTrackSelect,
   onFavorite,
   theme,
+  isFavorited,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -27,8 +29,7 @@ export default function MusicPlayer({
   const [duration, setDuration] = useState(0);
   const [showQueue, setShowQueue] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isFavorited, setIsFavorited] = useState(false);
-
+  const [localIsFavorited, setLocalIsFavorited] = useState(isFavorited);
   const bgGradient =
     theme === "light"
       ? "linear-gradient(135deg, #f8b4d9 0%, #f4d4ba 100%)"
@@ -50,6 +51,9 @@ export default function MusicPlayer({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    setLocalIsFavorited(isFavorited);
+  }, [isFavorited]);
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -98,6 +102,7 @@ export default function MusicPlayer({
     setIsFavorited(!isFavorited);
     onFavorite(currentTrack.id);
   };
+
   const selectSong = (track: Track) => {
     onTrackSelect(track);
     setShowQueue(false);
@@ -437,6 +442,7 @@ export default function MusicPlayer({
               }}
             />
           </button>
+
           <div
             style={{
               display: "flex",

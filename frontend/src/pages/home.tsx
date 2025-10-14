@@ -27,9 +27,11 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     fetchUserTheme();
+    fetchFavorites();
 
     // Check if coming from playlist with a track
     if (location.state?.track && location.state?.playlist) {
@@ -70,6 +72,17 @@ const Home = () => {
     }
   };
 
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/user/favorites", {
+        headers: { Authorization: `Bearer ${auth?.token}` },
+      });
+      setFavorites(response.data.favorites || []);
+    } catch (error) {
+      console.error("Failed to fetch favorites:", error);
+    }
+  };
+
   const loadRecommendations = async () => {
     setLoading(true);
     try {
@@ -88,32 +101,13 @@ const Home = () => {
         console.log(`✓ Loaded ${response.data.length} tracks`);
       } else {
         console.warn("No tracks returned from API");
-        // loadPopularTracks();
       }
     } catch (error) {
       console.error("Failed to load recommendations:", error);
-      // loadPopularTracks();
     } finally {
       setLoading(false);
     }
   };
-
-  // const loadPopularTracks = async () => {
-  //   try {
-  //     console.log("Loading popular tracks as fallback...");
-  //     const response = await axios.get("http://localhost:5000/music/popular", {
-  //       headers: { Authorization: `Bearer ${auth?.token}` },
-  //       params: { limit: 20 },
-  //     });
-
-  //     if (response.data.tracks && response.data.tracks.length > 0) {
-  //       setPlaylist(response.data.tracks);
-  //       console.log(`✓ Loaded ${response.data.tracks.length} popular tracks`);
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to load popular tracks:", error);
-  //   }
-  // };
 
   const handleLogout = () => {
     auth?.logout();
@@ -161,18 +155,27 @@ const Home = () => {
 
   const handleFavorite = async (trackId: string) => {
     try {
-      await axios.post(
-        "http://localhost:5000/user/favorites/",
-        { trackId },
-        { headers: { Authorization: `Bearer ${auth?.token}` } },
-      );
-      console.log("✓ Added to favorites");
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        console.log("Already in favorites");
+      const isFavorited = favorites.includes(trackId);
+
+      if (isFavorited) {
+        // Remove from favorites
+        await axios.delete(`http://localhost:5000/user/favorites/${trackId}`, {
+          headers: { Authorization: `Bearer ${auth?.token}` },
+        });
+        setFavorites((prev) => prev.filter((id) => id !== trackId));
+        console.log("✓ Removed from favorites");
       } else {
-        console.error("Failed to add favorite:", error);
+        // Add to favorites
+        await axios.post(
+          "http://localhost:5000/user/favorites/",
+          { trackId },
+          { headers: { Authorization: `Bearer ${auth?.token}` } },
+        );
+        setFavorites((prev) => [...prev, trackId]);
+        console.log("✓ Added to favorites");
       }
+    } catch (error: any) {
+      console.error("Failed to update favorite:", error);
     }
   };
 
@@ -576,6 +579,7 @@ const Home = () => {
           onTrackSelect={(track) => handleTrackSelect(track, playlist)}
           onFavorite={handleFavorite}
           theme={theme}
+          isFavorited={favorites.includes(currentTrack.id)}
         />
       )}
     </div>
