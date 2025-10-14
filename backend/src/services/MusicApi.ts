@@ -138,15 +138,26 @@ export class SpotifyService {
       );
 
       const track = response.data;
+      let audioUrl = track.preview_url || "";
+
+      // Try to get preview URL if not available
+      if (!audioUrl) {
+        try {
+          audioUrl = await SpotifyPreviewFinder.getPreviewUrl(track.id);
+        } catch (err) {
+          console.warn(`No preview available for track ${trackId}`);
+          // Continue anyway - we still have metadata
+        }
+      }
 
       return {
         id: track.id,
         title: track.name,
-        artist: track.artists[0].name,
-        album: track.album.name,
-        cover: track.album.images[0]?.url || "",
-        audioUrl: "",
-        duration: track.duration_ms / 1000,
+        artist: track.artists[0]?.name || "Unknown Artist",
+        album: track.album?.name || "Unknown Album",
+        cover: track.album?.images[0]?.url || "",
+        audioUrl: audioUrl || "",
+        duration: track.duration_ms / 1000 || 0,
       };
     } catch (error) {
       console.error("Error fetching track by ID:", error);

@@ -20,7 +20,6 @@ export default function MusicPlayer({
   onPrevious,
   onTrackSelect,
   onFavorite,
-  removeFav,
   theme,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -100,10 +99,8 @@ export default function MusicPlayer({
     const status = !isFavorited;
     if (status === true) {
       onFavorite(currentTrack.id);
-      removeFav = "No";
       setIsFavorited(true);
     } else {
-      removeFav = "Yes";
       setIsFavorited(false);
     }
   };

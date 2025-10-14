@@ -576,7 +576,6 @@ const Home = () => {
           onTrackSelect={(track) => handleTrackSelect(track, playlist)}
           onFavorite={handleFavorite}
           theme={theme}
-          removeFav={remove}
         />
       )}
     </div>

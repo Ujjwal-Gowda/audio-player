@@ -47,8 +47,14 @@ const Playlist = () => {
 
       const favoriteIds: string[] = response.data.favorites || [];
 
-      // 🔁 Fetch full track details in parallel
-      const trackResponses = await Promise.all(
+      if (favoriteIds.length === 0) {
+        setFavorites([]);
+        setLoading(false);
+        return;
+      }
+
+      // 🔁 Fetch full track details in parallel with error handling
+      const trackResponses = await Promise.allSettled(
         favoriteIds.map((id) =>
           axios.get(`http://localhost:5000/music/getid/${id}`, {
             headers: { Authorization: `Bearer ${auth?.token}` },
@@ -56,11 +62,38 @@ const Playlist = () => {
         ),
       );
 
-      const tracks = trackResponses.map((res) => res.data).filter(Boolean);
+      // Filter out failed requests and extract successful responses
+      const tracks = trackResponses
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => (result as PromiseFulfilledResult<any>).value.data)
+        .filter(Boolean);
 
       console.log("Fetched tracks:", tracks);
       setFavorites(tracks);
-      console.log(`✓ Loaded ${tracks.length} favorites`);
+      console.log(
+        `✓ Loaded ${tracks.length} out of ${favoriteIds.length} favorites`,
+      );
+
+      // If some tracks failed to fetch, remove them from favorites
+      if (tracks.length < favoriteIds.length) {
+        const fetchedIds = tracks.map((t) => t.id);
+        const failedIds = favoriteIds.filter((id) => !fetchedIds.includes(id));
+
+        // Remove failed tracks from database
+        for (const failedId of failedIds) {
+          try {
+            await axios.delete(
+              `http://localhost:5000/user/favorites/${failedId}`,
+              {
+                headers: { Authorization: `Bearer ${auth?.token}` },
+              },
+            );
+            console.log(`Removed unavailable track: ${failedId}`);
+          } catch (err) {
+            console.error(`Failed to remove track ${failedId}:`, err);
+          }
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch favorites:", error);
     } finally {
