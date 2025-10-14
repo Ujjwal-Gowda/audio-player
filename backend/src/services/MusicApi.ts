@@ -138,19 +138,6 @@ export class SpotifyService {
       );
 
       const track = response.data;
-      let previewUrl = track.preview_url;
-
-      if (!previewUrl) {
-        try {
-          previewUrl = await SpotifyPreviewFinder.getPreviewUrl(track.id);
-        } catch (err) {
-          return null;
-        }
-      }
-
-      if (!previewUrl) {
-        return null;
-      }
 
       return {
         id: track.id,
@@ -158,7 +145,7 @@ export class SpotifyService {
         artist: track.artists[0].name,
         album: track.album.name,
         cover: track.album.images[0]?.url || "",
-        audioUrl: previewUrl,
+        audioUrl: "",
         duration: track.duration_ms / 1000,
       };
     } catch (error) {

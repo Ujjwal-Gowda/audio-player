@@ -81,39 +81,22 @@ router.get(
 //   },
 // );
 //
-
 router.get(
   "/getid/:trackId",
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
       const { trackId } = req.params;
-      const accessToken = process.env.SPOTIFY_ACCESS_TOKEN; // or however you're managing tokens
 
-      const spotifyResponse = await axios.get(
-        `https://api.spotify.com/v1/tracks/${trackId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+      const track = await MusicService.getTrackById(trackId);
 
-      const track = spotifyResponse.data;
+      if (!track) {
+        return res
+          .status(404)
+          .json({ error: "Track not found or no preview available" });
+      }
 
-      // 🎯 Normalize the response
-      const formattedTrack = {
-        id: track.id,
-        title: track.name,
-        artist: track.artists?.map((a: any) => a.name).join(", "),
-        cover: track.album?.images?.[0]?.url,
-        preview_url: track.preview_url,
-        duration_ms: track.duration_ms,
-      };
-
-      console.log("🎧 Spotify Track Response:", spotifyResponse.data);
-
-      res.json(formattedTrack);
+      res.json(track);
     } catch (error: any) {
       console.error(
         "Error fetching track:",
