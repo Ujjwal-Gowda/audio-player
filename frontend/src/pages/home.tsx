@@ -77,9 +77,11 @@ const Home = () => {
       const response = await axios.get("http://localhost:5000/user/favorites", {
         headers: { Authorization: `Bearer ${auth?.token}` },
       });
+      console.log("Fetched favorites:", response.data.favorites);
       setFavorites(response.data.favorites || []);
     } catch (error) {
       console.error("Failed to fetch favorites:", error);
+      setFavorites([]);
     }
   };
 
@@ -112,9 +114,6 @@ const Home = () => {
   const handleLogout = () => {
     auth?.logout();
     navigate("/login");
-  };
-  const handleHome = () => {
-    navigate("/");
   };
 
   const handleProfile = () => {
@@ -156,26 +155,51 @@ const Home = () => {
   const handleFavorite = async (trackId: string) => {
     try {
       const isFavorited = favorites.includes(trackId);
+      console.log(`Track ${trackId} is currently favorited: ${isFavorited}`);
 
       if (isFavorited) {
         // Remove from favorites
-        await axios.delete(`http://localhost:5000/user/favorites/${trackId}`, {
-          headers: { Authorization: `Bearer ${auth?.token}` },
+        console.log("Removing from favorites...");
+        const response = await axios.delete(
+          `http://localhost:5000/user/favorites/${trackId}`,
+          {
+            headers: { Authorization: `Bearer ${auth?.token}` },
+          },
+        );
+        console.log("Server response:", response.data);
+
+        // Update local state AFTER successful server response
+        setFavorites((prev) => {
+          const updated = prev.filter((id) => id !== trackId);
+          console.log("Updated favorites (removed):", updated);
+          return updated;
         });
-        setFavorites((prev) => prev.filter((id) => id !== trackId));
         console.log("✓ Removed from favorites");
       } else {
         // Add to favorites
-        await axios.post(
-          "http://localhost:5000/user/favorites/",
+        console.log("Adding to favorites...");
+        const response = await axios.post(
+          "http://localhost:5000/user/favorites",
           { trackId },
           { headers: { Authorization: `Bearer ${auth?.token}` } },
         );
-        setFavorites((prev) => [...prev, trackId]);
+        console.log("Server response:", response.data);
+
+        // Update local state AFTER successful server response
+        setFavorites((prev) => {
+          const updated = [...prev, trackId];
+          console.log("Updated favorites (added):", updated);
+          return updated;
+        });
         console.log("✓ Added to favorites");
       }
     } catch (error: any) {
-      console.error("Failed to update favorite:", error);
+      console.error(
+        "Failed to update favorite:",
+        error.response?.data || error,
+      );
+      // Revert the optimistic update if there was an error
+      fetchFavorites(); // Re-fetch to get the correct state
     }
   };
 
@@ -250,7 +274,6 @@ const Home = () => {
         }}
       >
         <button
-          onClick={handleHome}
           style={{
             background: "rgba(255, 255, 255, 0.2)",
             backdropFilter: "blur(10px)",
@@ -278,17 +301,6 @@ const Home = () => {
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
           {!isMobile && <span>Muzic</span>}
         </button>
         <button

@@ -41,11 +41,13 @@ const Playlist = () => {
 
   const fetchFavorites = async () => {
     try {
+      console.log("📋 Fetching favorites...");
       const response = await axios.get(`http://localhost:5000/user/favorites`, {
         headers: { Authorization: `Bearer ${auth?.token}` },
       });
 
       const favoriteIds: string[] = response.data.favorites || [];
+      console.log(`📋 Found ${favoriteIds.length} favorite IDs:`, favoriteIds);
 
       if (favoriteIds.length === 0) {
         setFavorites([]);
@@ -53,49 +55,64 @@ const Playlist = () => {
         return;
       }
 
-      // 🔁 Fetch full track details in parallel with error handling
-      const trackResponses = await Promise.allSettled(
-        favoriteIds.map((id) =>
-          axios.get(`http://localhost:5000/music/getid/${id}`, {
-            headers: { Authorization: `Bearer ${auth?.token}` },
-          }),
-        ),
+      // Fetch full track details in parallel with error handling
+      const trackPromises = favoriteIds.map(async (id) => {
+        try {
+          console.log(`🎵 Fetching track: ${id}`);
+          const response = await axios.get(
+            `http://localhost:5000/music/getid/${id}`,
+            {
+              headers: { Authorization: `Bearer ${auth?.token}` },
+            },
+          );
+          console.log(`✓ Fetched track ${id}:`, response.data.title);
+          return response.data;
+        } catch (error: any) {
+          console.error(
+            `✗ Failed to fetch track ${id}:`,
+            error.response?.status,
+          );
+          return null;
+        }
+      });
+
+      const trackResults = await Promise.all(trackPromises);
+      const validTracks = trackResults.filter(
+        (track): track is Track => track !== null,
       );
 
-      // Filter out failed requests and extract successful responses
-      const tracks = trackResponses
-        .filter((result) => result.status === "fulfilled")
-        .map((result) => (result as PromiseFulfilledResult<any>).value.data)
-        .filter(Boolean);
-
-      console.log("Fetched tracks:", tracks);
-      setFavorites(tracks);
       console.log(
-        `✓ Loaded ${tracks.length} out of ${favoriteIds.length} favorites`,
+        `✓ Successfully loaded ${validTracks.length} out of ${favoriteIds.length} favorites`,
+      );
+      setFavorites(validTracks);
+
+      // Clean up invalid favorites from the database
+      const invalidIds = favoriteIds.filter(
+        (id) => !validTracks.find((t) => t.id === id),
       );
 
-      // If some tracks failed to fetch, remove them from favorites
-      if (tracks.length < favoriteIds.length) {
-        const fetchedIds = tracks.map((t) => t.id);
-        const failedIds = favoriteIds.filter((id) => !fetchedIds.includes(id));
-
-        // Remove failed tracks from database
-        for (const failedId of failedIds) {
+      if (invalidIds.length > 0) {
+        console.log(`🧹 Cleaning up ${invalidIds.length} invalid favorites...`);
+        for (const invalidId of invalidIds) {
           try {
             await axios.delete(
-              `http://localhost:5000/user/favorites/${failedId}`,
+              `http://localhost:5000/user/favorites/${invalidId}`,
               {
                 headers: { Authorization: `Bearer ${auth?.token}` },
               },
             );
-            console.log(`Removed unavailable track: ${failedId}`);
+            console.log(`✓ Removed invalid favorite: ${invalidId}`);
           } catch (err) {
-            console.error(`Failed to remove track ${failedId}:`, err);
+            console.error(
+              `✗ Failed to remove invalid favorite ${invalidId}:`,
+              err,
+            );
           }
         }
       }
     } catch (error) {
       console.error("Failed to fetch favorites:", error);
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
@@ -103,6 +120,7 @@ const Playlist = () => {
 
   const handleRemoveFavorite = async (trackId: string) => {
     try {
+      console.log(`🗑️ Removing favorite: ${trackId}`);
       await axios.delete(`http://localhost:5000/user/favorites/${trackId}`, {
         headers: {
           Authorization: `Bearer ${auth?.token}`,
@@ -111,12 +129,16 @@ const Playlist = () => {
 
       setFavorites((prev) => prev.filter((track) => track.id !== trackId));
       console.log("✓ Removed from favorites");
-    } catch (error) {
-      console.error("Failed to remove favorite:", error);
+    } catch (error: any) {
+      console.error(
+        "Failed to remove favorite:",
+        error.response?.data || error,
+      );
     }
   };
 
   const handlePlayTrack = (track: Track) => {
+    console.log(`▶️ Playing track:`, track.title);
     navigate("/", { state: { track, playlist: favorites } });
   };
 
@@ -366,7 +388,7 @@ const Playlist = () => {
                 )}
 
                 <img
-                  src={track.cover}
+                  src={track.cover || "https://via.placeholder.com/60"}
                   alt={track.title}
                   style={{
                     width: isMobile ? "50px" : "60px",

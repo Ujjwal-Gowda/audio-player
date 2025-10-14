@@ -54,7 +54,7 @@ export class SpotifyService {
       this.tokenExpiry = Date.now() + expiresIn * 1000;
       const development = true;
       if (development === true) {
-        console.log("[SpotifyService] 🎧 New access token generated:", "");
+        console.log("[SpotifyService] 🎧 New access token generated");
         console.log(
           "[SpotifyService] Token expires in:",
           expiresIn / 60,
@@ -88,7 +88,7 @@ export class SpotifyService {
         artist: track.artists[0].name,
         album: track.album.name,
         cover: track.album.images[0]?.url,
-        previewUrl: track.preview_url,
+        audioUrl: track.preview_url || "",
         duration: track.duration_ms / 1000,
         spotifyUrl: track.external_urls.spotify,
       }));
@@ -98,29 +98,59 @@ export class SpotifyService {
     }
   }
 
-  static async newReleases(limit = 2): Promise<Track[]> {
+  // FIXED: Now returns actual tracks with audio URLs, not albums
+  static async newReleases(limit = 8): Promise<Track[]> {
     try {
       const token = await this.getAccessToken();
-      const response = await axios.get(
+
+      // Step 1: Get new release albums
+      const albumsResponse = await axios.get(
         "https://api.spotify.com/v1/browse/new-releases",
         {
           params: {
-            limit: 2,
+            limit: 8, // Get 10 albums
           },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
-      return response.data.albums.items.slice(0, limit).map((album: any) => ({
-        id: album.id,
-        title: album.name,
-        artist: album.artists.map((a: any) => a.name).join(", "),
-        album: album.name,
-        cover: album.images[0]?.url || "",
-        audioUrl: "",
-        duration: 0,
-        genre: "",
-      }));
+      const albums = albumsResponse.data.albums.items;
+      const tracks: Track[] = [];
+
+      // Step 2: For each album, get its tracks
+      for (const album of albums) {
+        try {
+          const tracksResponse = await axios.get(
+            `https://api.spotify.com/v1/albums/${album.id}/tracks`,
+            {
+              params: { limit: 2 }, // Get 2 tracks per album
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          // Step 3: Get full track details (including preview URLs)
+          for (const track of tracksResponse.data.items) {
+            try {
+              const trackDetails = await this.getTrackById(track.id);
+              if (trackDetails) {
+                tracks.push(trackDetails);
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch track ${track.id}`);
+            }
+          }
+
+          // Stop if we have enough tracks
+          if (tracks.length >= limit) {
+            break;
+          }
+        } catch (err) {
+          console.warn(`Failed to fetch tracks for album ${album.id}`);
+        }
+      }
+
+      console.log(`✓ Fetched ${tracks.length} new release tracks`);
+      return tracks.slice(0, limit);
     } catch (error) {
       console.error("Error fetching new releases:", error);
       return [];
@@ -143,10 +173,10 @@ export class SpotifyService {
       // Try to get preview URL if not available
       if (!audioUrl) {
         try {
-          audioUrl = await SpotifyPreviewFinder.getPreviewUrl(track.id);
+          const previewUrl = await SpotifyPreviewFinder.getPreviewUrl(track.id);
+          audioUrl = previewUrl || "";
         } catch (err) {
           console.warn(`No preview available for track ${trackId}`);
-          // Continue anyway - we still have metadata
         }
       }
 
@@ -156,7 +186,7 @@ export class SpotifyService {
         artist: track.artists[0]?.name || "Unknown Artist",
         album: track.album?.name || "Unknown Album",
         cover: track.album?.images[0]?.url || "",
-        audioUrl: audioUrl || "",
+        audioUrl: audioUrl,
         duration: track.duration_ms / 1000 || 0,
       };
     } catch (error) {
@@ -173,14 +203,12 @@ export class MusicService {
 
   static async newReleases(): Promise<Track[]> {
     try {
-      console.log("Fetching recommendations...");
-
-      let tracks = await SpotifyService.newReleases();
-      console.log("Recommendations fetched successfully.", tracks);
+      console.log("Fetching new release tracks...");
+      let tracks = await SpotifyService.newReleases(20);
+      console.log("New release tracks fetched successfully.", tracks.length);
       return tracks;
     } catch (error) {
-      console.error("Error in getRecommendation:", error);
-
+      console.error("Error in newReleases:", error);
       return [];
     }
   }

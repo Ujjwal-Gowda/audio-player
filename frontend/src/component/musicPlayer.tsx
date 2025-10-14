@@ -29,7 +29,7 @@ export default function MusicPlayer({
   const [duration, setDuration] = useState(0);
   const [showQueue, setShowQueue] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [localIsFavorited, setLocalIsFavorited] = useState(isFavorited);
+
   const bgGradient =
     theme === "light"
       ? "linear-gradient(135deg, #f8b4d9 0%, #f4d4ba 100%)"
@@ -51,9 +51,6 @@ export default function MusicPlayer({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    setLocalIsFavorited(isFavorited);
-  }, [isFavorited]);
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -99,7 +96,10 @@ export default function MusicPlayer({
   };
 
   const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
+    console.log("🎵 MusicPlayer: Heart clicked!");
+    console.log("🎵 MusicPlayer: Current track ID:", currentTrack.id);
+    console.log("🎵 MusicPlayer: Currently favorited:", isFavorited);
+    console.log("🎵 MusicPlayer: Calling onFavorite with:", currentTrack.id);
     onFavorite(currentTrack.id);
   };
 
@@ -136,7 +136,29 @@ export default function MusicPlayer({
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      <audio ref={audioRef} src={currentTrack.audioUrl} />
+      <audio ref={audioRef} src={currentTrack.audioUrl || undefined} />
+
+      {/* Show warning if no audio available */}
+      {!currentTrack.audioUrl && (
+        <div
+          style={{
+            position: "fixed",
+            top: "100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(255, 107, 157, 0.95)",
+            color: "white",
+            padding: "1rem 1.5rem",
+            borderRadius: "12px",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+            zIndex: 1001,
+          }}
+        >
+          ⚠️ Preview not available for this track
+        </div>
+      )}
 
       {showQueue && (
         <div

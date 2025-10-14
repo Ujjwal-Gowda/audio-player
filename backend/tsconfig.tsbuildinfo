@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/db/connection.ts","./src/middleware/auth.ts","./src/models/user.ts","./src/routes/auth.ts","./src/routes/music.ts","./src/routes/user.ts","./src/services/MusicApi.ts","./src/types/spotify-preview-finder.d.ts"],"version":"5.9.2"}
