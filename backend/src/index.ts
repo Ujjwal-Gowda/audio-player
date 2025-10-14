@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.ts";
-import { authMiddleware } from "./middleware/auth.ts";
-import { connectDB } from "./db/connection.ts";
-import userRoutes from "./routes/user.ts";
-import musicRoutes from "./routes/music.ts";
+import authRoutes from "./routes/auth";
+import { authMiddleware } from "./middleware/auth";
+import { connectDB } from "./db/connection";
+import userRoutes from "./routes/user";
+import musicRoutes from "./routes/music";
 
 dotenv.config();
 
