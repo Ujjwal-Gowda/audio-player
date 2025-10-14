@@ -39,7 +39,6 @@ router.post(
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
-      console.log(req.body);
       const { trackId } = req.body;
       const userId = (req as any).user._id;
 
