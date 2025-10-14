@@ -39,6 +39,7 @@ router.post(
   authMiddleware,
   async (req: Request, res: Response) => {
     try {
+      console.log(req.body);
       const { trackId } = req.body;
       const userId = (req as any).user._id;
 
@@ -60,6 +61,39 @@ router.post(
       await user.save();
 
       res.json({ message: "Added to favorites", favorites: user.favorites });
+    } catch (error) {
+      console.error("Add favorite error:", error);
+      res.status(500).json({ error: "Failed to add favorite" });
+    }
+  },
+);
+router.get(
+  "/favorites",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      console.log("→ GET /user/favorites hit");
+      const userId = (req as any).user._id;
+      console.log(userId);
+      if (!userId) {
+        return res.status(400).json({ error: "user ID is not found" });
+      }
+
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const favorite = user.favorites;
+      console.log(favorite);
+      if (!favorite) {
+        return res.status(404).json({ error: "no faviroutes found" });
+      }
+      res.json({
+        message: "Added to favorites",
+        favorites: user.favorites,
+      });
     } catch (error) {
       console.error("Add favorite error:", error);
       res.status(500).json({ error: "Failed to add favorite" });

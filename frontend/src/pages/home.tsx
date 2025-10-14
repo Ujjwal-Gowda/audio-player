@@ -73,9 +73,9 @@ const Home = () => {
   const loadRecommendations = async () => {
     setLoading(true);
     try {
-      console.log("Loading recommendations...");
+      console.log("Loading new Releases");
       const response = await axios.get(
-        "http://localhost:5000/music/recommendation",
+        "http://localhost:5000/music/newreleases",
         {
           headers: { Authorization: `Bearer ${auth?.token}` },
         },
@@ -119,6 +119,9 @@ const Home = () => {
     auth?.logout();
     navigate("/login");
   };
+  const handleHome = () => {
+    navigate("/");
+  };
 
   const handleProfile = () => {
     navigate("/profile");
@@ -159,7 +162,7 @@ const Home = () => {
   const handleFavorite = async (trackId: string) => {
     try {
       await axios.post(
-        "http://localhost:5000/user/favorites",
+        "http://localhost:5000/user/favorites/",
         { trackId },
         { headers: { Authorization: `Bearer ${auth?.token}` } },
       );
@@ -243,6 +246,48 @@ const Home = () => {
           backdropFilter: "blur(10px)",
         }}
       >
+        <button
+          onClick={handleHome}
+          style={{
+            background: "rgba(255, 255, 255, 0.2)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+            color: "white",
+            padding: isMobile ? "0.75rem" : "0.625rem 1.25rem",
+            borderRadius: "12px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            transition: "all 0.2s ease",
+            minWidth: isMobile ? "44px" : "auto",
+            minHeight: "44px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+            e.currentTarget.style.transform = "translateY(-2px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          {!isMobile && <span>Muzic</span>}
+        </button>
         <button
           onClick={handleProfile}
           style={{
@@ -399,7 +444,7 @@ const Home = () => {
               textShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
             }}
           >
-            Recommended for You
+            New Releases
           </h2>
 
           {/* Masonry Grid */}
@@ -531,6 +576,7 @@ const Home = () => {
           onTrackSelect={(track) => handleTrackSelect(track, playlist)}
           onFavorite={handleFavorite}
           theme={theme}
+          removeFav={remove}
         />
       )}
     </div>

@@ -41,14 +41,26 @@ const Playlist = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/user/favorites", {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
-        },
+      const response = await axios.get(`http://localhost:5000/user/favorites`, {
+        headers: { Authorization: `Bearer ${auth?.token}` },
       });
 
-      setFavorites(response.data.favorites || []);
-      console.log(`✓ Loaded ${response.data.favorites?.length || 0} favorites`);
+      const favoriteIds: string[] = response.data.favorites || [];
+
+      // 🔁 Fetch full track details in parallel
+      const trackResponses = await Promise.all(
+        favoriteIds.map((id) =>
+          axios.get(`http://localhost:5000/music/getid/${id}`, {
+            headers: { Authorization: `Bearer ${auth?.token}` },
+          }),
+        ),
+      );
+
+      const tracks = trackResponses.map((res) => res.data).filter(Boolean);
+
+      console.log("Fetched tracks:", tracks);
+      setFavorites(tracks);
+      console.log(`✓ Loaded ${tracks.length} favorites`);
     } catch (error) {
       console.error("Failed to fetch favorites:", error);
     } finally {

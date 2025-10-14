@@ -44,7 +44,7 @@ export class SpotifyService {
       );
 
       const accessToken = response.data?.access_token;
-      const expiresIn = response.data?.expires_in ?? 3600; // default 1 hour
+      const expiresIn = response.data?.expires_in ?? 3600;
 
       if (!accessToken) {
         throw new Error("Spotify token response missing access_token");
@@ -54,11 +54,7 @@ export class SpotifyService {
       this.tokenExpiry = Date.now() + expiresIn * 1000;
       const development = true;
       if (development === true) {
-        console.log(
-          "[SpotifyService] 🎧 New access token generated:",
-          accessToken,
-          "",
-        );
+        console.log("[SpotifyService] 🎧 New access token generated:", "");
         console.log(
           "[SpotifyService] Token expires in:",
           expiresIn / 60,
@@ -92,7 +88,7 @@ export class SpotifyService {
         artist: track.artists[0].name,
         album: track.album.name,
         cover: track.album.images[0]?.url,
-        previewUrl: track.preview_url, // 30 seconds
+        previewUrl: track.preview_url,
         duration: track.duration_ms / 1000,
         spotifyUrl: track.external_urls.spotify,
       }));
@@ -102,41 +98,35 @@ export class SpotifyService {
     }
   }
 
-  static async getTopSongs(
-    playlistId = "3cEYpjA9oz9GiPac4AsH4n",
-    limit = 10,
-  ): Promise<Track[]> {
+  static async newReleases(limit = 2): Promise<Track[]> {
     try {
       const token = await this.getAccessToken();
       const response = await axios.get(
-        `https://api.spotify.com/v1/playlists/${playlistId}`,
+        "https://api.spotify.com/v1/browse/new-releases",
         {
           params: {
-            limit: 10,
-            fields:
-              "tracks.items(track(id,name,artists,album,preview_url,duration_ms))",
+            limit: 2,
           },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
-      return response.data.tracks.items.map((item: any) => ({
-        id: item.track.id,
-        title: item.track.name,
-        artist: item.track.artists.map((a: any) => a.name).join(", "),
-        album: item.track.album.name,
-        cover: item.track.album.images[0]?.url || "",
-        audioUrl: item.track.preview_url || "",
-        duration: item.track.duration_ms / 1000,
-        genre: "", // Spotify doesn't expose genres per track directly
+      return response.data.albums.items.slice(0, limit).map((album: any) => ({
+        id: album.id,
+        title: album.name,
+        artist: album.artists.map((a: any) => a.name).join(", "),
+        album: album.name,
+        cover: album.images[0]?.url || "",
+        audioUrl: "",
+        duration: 0,
+        genre: "",
       }));
     } catch (error) {
-      console.error("Error fetching top songs:", error);
+      console.error("Error fetching new releases:", error);
       return [];
     }
   }
 
-  // Get track by ID (for favorites)
   static async getTrackById(trackId: string): Promise<Track | null> {
     try {
       const token = await this.getAccessToken();
@@ -183,15 +173,12 @@ export class MusicService {
     return SpotifyService.searchTracks(query, limit);
   }
 
-  static async getTopSong(limit = 10): Promise<Track[]> {
+  static async newReleases(): Promise<Track[]> {
     try {
       console.log("Fetching recommendations...");
-      let tracks = await SpotifyService.getTopSongs(
-        "3cEYpjA9oz9GiPac4AsH4n",
-        limit,
-      );
-      console.log("Recommendations fetched successfully.", tracks);
 
+      let tracks = await SpotifyService.newReleases();
+      console.log("Recommendations fetched successfully.", tracks);
       return tracks;
     } catch (error) {
       console.error("Error in getRecommendation:", error);

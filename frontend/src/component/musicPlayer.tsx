@@ -9,6 +9,7 @@ interface MusicPlayerProps {
   onPrevious: () => void;
   onTrackSelect: (track: Track) => void;
   onFavorite: (trackId: string) => void;
+  removeFav: "Yes" | "No";
   theme: "light" | "dark";
 }
 
@@ -19,6 +20,7 @@ export default function MusicPlayer({
   onPrevious,
   onTrackSelect,
   onFavorite,
+  removeFav,
   theme,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -95,8 +97,15 @@ export default function MusicPlayer({
   };
 
   const toggleFavorite = () => {
-    onFavorite(currentTrack.id);
-    setIsFavorited(!isFavorited);
+    const status = !isFavorited;
+    if (status === true) {
+      onFavorite(currentTrack.id);
+      removeFav = "No";
+      setIsFavorited(true);
+    } else {
+      removeFav = "Yes";
+      setIsFavorited(false);
+    }
   };
 
   const selectSong = (track: Track) => {

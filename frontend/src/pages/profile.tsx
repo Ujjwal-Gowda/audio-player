@@ -30,9 +30,12 @@ const Profile = () => {
       });
       const user = response.data.user;
       setUserData(user);
-      
+
       // Apply theme from user preferences
-      document.documentElement.setAttribute("data-theme", user.themePref || "light");
+      document.documentElement.setAttribute(
+        "data-theme",
+        user.themePref || "light",
+      );
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     } finally {
@@ -42,7 +45,7 @@ const Profile = () => {
 
   const handleThemeToggle = async (newTheme: "light" | "dark") => {
     document.documentElement.setAttribute("data-theme", newTheme);
-    
+
     try {
       await axios.patch(
         "http://localhost:5000/user/theme",
@@ -51,9 +54,9 @@ const Profile = () => {
           headers: {
             Authorization: `Bearer ${auth?.token}`,
           },
-        }
+        },
       );
-      
+
       // Update local state
       if (userData) {
         setUserData({ ...userData, themePref: newTheme });
@@ -101,24 +104,52 @@ const Profile = () => {
           {/* Decorative Icons */}
           <div className="deco-icons">
             <div className="deco-icon icon-1">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 6v6l4 2" />
               </svg>
             </div>
             <div className="deco-icon icon-2">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
             </div>
             <div className="deco-icon icon-3">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M12 2L2 7l10 5 10-5-10-5z" />
                 <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
             <div className="deco-icon icon-4">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="3" />
                 <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
               </svg>
@@ -128,7 +159,14 @@ const Profile = () => {
           {/* User Avatar */}
           <div className="profile-photo">
             <div className="photo-circle">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="80"
+                height="80"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
@@ -165,7 +203,14 @@ const Profile = () => {
                 className={`theme-option ${currentTheme === "light" ? "active" : ""}`}
                 onClick={() => handleThemeToggle("light")}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="5" />
                   <line x1="12" y1="1" x2="12" y2="3" />
                   <line x1="12" y1="21" x2="12" y2="23" />
@@ -182,7 +227,14 @@ const Profile = () => {
                 className={`theme-option ${currentTheme === "dark" ? "active" : ""}`}
                 onClick={() => handleThemeToggle("dark")}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 </svg>
                 Dark
@@ -193,14 +245,28 @@ const Profile = () => {
           {/* Action Buttons */}
           <div className="action-buttons">
             <button className="btn-secondary" onClick={handleHome}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
               Home
             </button>
             <button className="btn-primary" onClick={handleLogout}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
@@ -213,5 +279,4 @@ const Profile = () => {
     </div>
   );
 };
-
 export default Profile;
