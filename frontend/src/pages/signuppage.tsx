@@ -1,8 +1,7 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import { useNavigate, Link } from "react-router-dom";
-import "../styles/auth.css";
 
 const Signup = () => {
   const auth = useContext(AuthContext);
@@ -15,6 +14,21 @@ const Signup = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (
+      (document.documentElement.getAttribute("data-theme") as
+        | "light"
+        | "dark") || "light"
+    );
+  });
+
+  useEffect(() => {
+    const currentTheme =
+      (document.documentElement.getAttribute("data-theme") as
+        | "light"
+        | "dark") || "light";
+    setTheme(currentTheme);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,13 +38,6 @@ const Signup = () => {
     e.preventDefault();
     setError(null);
 
-    // Validate passwords match
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    // Validate password length
     if (form.password.length < 6) {
       setError("Password must be at least 6 characters long");
       return;
@@ -57,22 +64,91 @@ const Signup = () => {
     }
   };
 
+  const bgGradient =
+    theme === "light"
+      ? "linear-gradient(135deg, #f8b4d9 0%, #f4d4ba 100%)"
+      : "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+
+  const cardBg =
+    theme === "light" ? "rgba(255, 255, 255, 0.95)" : "rgba(15, 20, 25, 0.95)";
+
+  const textColor = theme === "light" ? "#2d3748" : "#e2e8f0";
+  const mutedColor = theme === "light" ? "#718096" : "#a0aec0";
+  const accentColor = theme === "light" ? "#ff6b9d" : "#9f7aea";
+  const inputBg = theme === "light" ? "#ffffff" : "#1a1a2e";
+  const inputBorder =
+    theme === "light" ? "#e2e8f0" : "rgba(255, 255, 255, 0.1)";
+
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1>Create Account</h1>
-          <p>Sign up to get started</p>
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+        background: bgGradient,
+        transition: "background 0.3s ease",
+      }}
+    >
+      <div
+        style={{
+          background: cardBg,
+          backdropFilter: "blur(20px)",
+          borderRadius: "24px",
+          padding: "2.5rem",
+          width: "100%",
+          maxWidth: "420px",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <h1
+            style={{
+              color: textColor,
+              fontSize: "2rem",
+              margin: "0 0 0.5rem 0",
+              fontWeight: 600,
+            }}
+          >
+            Create Account
+          </h1>
+          <p style={{ color: mutedColor, fontSize: "0.95rem", margin: 0 }}>
+            Sign up to get started
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+        >
           {error && (
-            <div className="error-message">
-              <span>⚠️</span> {error}
+            <div
+              style={{
+                background: "rgba(255, 107, 157, 0.1)",
+                border: `1px solid ${accentColor}`,
+                color: accentColor,
+                padding: "0.875rem",
+                borderRadius: "12px",
+                fontSize: "0.9rem",
+              }}
+            >
+              {error}
             </div>
           )}
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <label
+              htmlFor="name"
+              style={{ color: textColor, fontSize: "0.9rem", fontWeight: 500 }}
+            >
+              Full Name
+            </label>
             <input
               id="name"
               type="text"
@@ -82,24 +158,63 @@ const Signup = () => {
               onChange={handleChange}
               required
               disabled={loading}
+              style={{
+                padding: "0.875rem",
+                border: `1px solid ${inputBorder}`,
+                borderRadius: "12px",
+                fontSize: "1rem",
+                background: inputBg,
+                color: textColor,
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = accentColor)}
+              onBlur={(e) => (e.target.style.borderColor = inputBorder)}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <label
+              htmlFor="email"
+              style={{ color: textColor, fontSize: "0.9rem", fontWeight: 500 }}
+            >
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
               name="email"
-              placeholder="Enter your email"
+              placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
               required
               disabled={loading}
+              style={{
+                padding: "0.875rem",
+                border: `1px solid ${inputBorder}`,
+                borderRadius: "12px",
+                fontSize: "1rem",
+                background: inputBg,
+                color: textColor,
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = accentColor)}
+              onBlur={(e) => (e.target.style.borderColor = inputBorder)}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <label
+              htmlFor="password"
+              style={{ color: textColor, fontSize: "0.9rem", fontWeight: 500 }}
+            >
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -109,33 +224,67 @@ const Signup = () => {
               onChange={handleChange}
               required
               disabled={loading}
-              minLength={6}
+              style={{
+                padding: "0.875rem",
+                border: `1px solid ${inputBorder}`,
+                borderRadius: "12px",
+                fontSize: "1rem",
+                background: inputBg,
+                color: textColor,
+                outline: "none",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = accentColor)}
+              onBlur={(e) => (e.target.style.borderColor = inputBorder)}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm your password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              background: accentColor,
+              color: "white",
+              border: "none",
+              padding: "1rem",
+              borderRadius: "12px",
+              fontSize: "1rem",
+              fontWeight: 600,
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "all 0.2s",
+              opacity: loading ? 0.6 : 1,
+              marginTop: "0.5rem",
+            }}
+            onMouseEnter={(e) => {
+              if (!loading)
+                e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>
+        <div
+          style={{
+            marginTop: "1.5rem",
+            textAlign: "center",
+            paddingTop: "1.5rem",
+            borderTop: `1px solid ${inputBorder}`,
+          }}
+        >
+          <p style={{ color: mutedColor, fontSize: "0.9rem", margin: 0 }}>
             Already have an account?{" "}
-            <Link to="/login" className="auth-link">
+            <Link
+              to="/login"
+              style={{
+                color: accentColor,
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
               Sign in
             </Link>
           </p>

@@ -46,7 +46,7 @@ const Playlist = () => {
     try {
       console.log("📋 Fetching favorites...");
       const response = await axios.get(
-        `https://audio-player-058s.onrender.com/favorites`,
+        `https://audio-player-058s.onrender.com/user/favorites`,
         {
           headers: { Authorization: `Bearer ${auth?.token}` },
         },
