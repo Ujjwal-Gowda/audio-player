@@ -57,11 +57,14 @@ const Home = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/protected", {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
+      const response = await axios.get(
+        "https://audio-player-058s.onrender.com/protected",
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
         },
-      });
+      );
       const userTheme = response.data.user.themePref || "light";
       setTheme(userTheme);
       document.documentElement.setAttribute("data-theme", userTheme);
@@ -74,9 +77,12 @@ const Home = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/user/favorites", {
-        headers: { Authorization: `Bearer ${auth?.token}` },
-      });
+      const response = await axios.get(
+        "https://audio-player-058s.onrender.com/user/favorites",
+        {
+          headers: { Authorization: `Bearer ${auth?.token}` },
+        },
+      );
       console.log("Fetched favorites:", response.data.favorites);
       setFavorites(response.data.favorites || []);
     } catch (error) {
@@ -90,7 +96,7 @@ const Home = () => {
     try {
       console.log("Loading new Releases");
       const response = await axios.get(
-        "http://localhost:5000/music/newreleases",
+        "https://audio-player-058s.onrender.com/music/newreleases",
         {
           headers: { Authorization: `Bearer ${auth?.token}` },
         },
@@ -161,7 +167,7 @@ const Home = () => {
         // Remove from favorites
         console.log("Removing from favorites...");
         const response = await axios.delete(
-          `http://localhost:5000/user/favorites/${trackId}`,
+          `https://audio-player-058s.onrender.com/user/favorites/${trackId}`,
           {
             headers: { Authorization: `Bearer ${auth?.token}` },
           },
@@ -179,7 +185,7 @@ const Home = () => {
         // Add to favorites
         console.log("Adding to favorites...");
         const response = await axios.post(
-          "http://localhost:5000/user/favorites",
+          "https://audio-player-058s.onrender.com/user/favorites",
           { trackId },
           { headers: { Authorization: `Bearer ${auth?.token}` } },
         );

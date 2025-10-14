@@ -7,7 +7,12 @@ import "../styles/auth.css";
 const Signup = () => {
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name:"",email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,11 +39,14 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/auth/signup", {
-        name:form.name,
-        email: form.email,
-        password: form.password,
-      });
+      const res = await axios.post(
+        "https://audio-player-058s.onrender.com/auth/signup",
+        {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        },
+      );
 
       auth?.login(res.data.token);
       navigate("/");
@@ -119,11 +127,7 @@ const Signup = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={loading}
-          >
+          <button type="submit" className="auth-button" disabled={loading}>
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
@@ -142,4 +146,3 @@ const Signup = () => {
 };
 
 export default Signup;
-

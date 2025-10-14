@@ -27,11 +27,14 @@ const Playlist = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/protected", {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
+      const response = await axios.get(
+        "https://audio-player-058s.onrender.com/protected",
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
         },
-      });
+      );
       const userTheme = response.data.user.themePref || "light";
       setTheme(userTheme);
     } catch (error) {
@@ -42,9 +45,12 @@ const Playlist = () => {
   const fetchFavorites = async () => {
     try {
       console.log("📋 Fetching favorites...");
-      const response = await axios.get(`http://localhost:5000/user/favorites`, {
-        headers: { Authorization: `Bearer ${auth?.token}` },
-      });
+      const response = await axios.get(
+        `https://audio-player-058s.onrender.com/favorites`,
+        {
+          headers: { Authorization: `Bearer ${auth?.token}` },
+        },
+      );
 
       const favoriteIds: string[] = response.data.favorites || [];
       console.log(`📋 Found ${favoriteIds.length} favorite IDs:`, favoriteIds);
@@ -60,7 +66,7 @@ const Playlist = () => {
         try {
           console.log(`🎵 Fetching track: ${id}`);
           const response = await axios.get(
-            `http://localhost:5000/music/getid/${id}`,
+            `https://audio-player-058s.onrender.com/music/getid/${id}`,
             {
               headers: { Authorization: `Bearer ${auth?.token}` },
             },
@@ -96,7 +102,7 @@ const Playlist = () => {
         for (const invalidId of invalidIds) {
           try {
             await axios.delete(
-              `http://localhost:5000/user/favorites/${invalidId}`,
+              `https://audio-player-058s.onrender.com/user/favorites/${invalidId}`,
               {
                 headers: { Authorization: `Bearer ${auth?.token}` },
               },
@@ -121,11 +127,14 @@ const Playlist = () => {
   const handleRemoveFavorite = async (trackId: string) => {
     try {
       console.log(`🗑️ Removing favorite: ${trackId}`);
-      await axios.delete(`http://localhost:5000/user/favorites/${trackId}`, {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
+      await axios.delete(
+        `https://audio-player-058s.onrender.com/user/favorites/${trackId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
         },
-      });
+      );
 
       setFavorites((prev) => prev.filter((track) => track.id !== trackId));
       console.log("✓ Removed from favorites");

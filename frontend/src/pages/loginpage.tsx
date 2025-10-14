@@ -18,10 +18,13 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/auth/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        "https://audio-player-058s.onrender.com/auth/login",
+        {
+          email,
+          password,
+        },
+      );
       auth?.login(res.data.token);
       navigate("/");
     } catch (err: any) {
@@ -72,11 +75,7 @@ const Login = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={loading}
-          >
+          <button type="submit" className="auth-button" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>

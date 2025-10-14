@@ -23,11 +23,14 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/protected", {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
+      const response = await axios.get(
+        "https://audio-player-058s.onrender.com/protected",
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
         },
-      });
+      );
       const user = response.data.user;
       setUserData(user);
 
@@ -48,7 +51,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        "http://localhost:5000/user/theme",
+        "https://audio-player-058s.onrender.com/user/theme",
         { themePref: newTheme },
         {
           headers: {
