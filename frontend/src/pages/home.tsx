@@ -58,7 +58,7 @@ const Home = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get(API_ENDPOINTS.USER_THEME, {
+      const response = await axios.patch(API_ENDPOINTS.PROTECTED, {
         headers: {
           Authorization: `Bearer ${auth?.token}`,
         },

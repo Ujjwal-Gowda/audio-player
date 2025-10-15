@@ -23,19 +23,47 @@ const app = express();
 //   }),
 // );
 //
-// ✅ Configure CORS properly
-app.use(
-  cors({
-    origin: [
-      "https://audio-player-five-coral.vercel.app",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  }),
-);
+// // ✅ Configure CORS properly
+// app.use(
+//   cors({
+//     origin: [
+//       "https://audio-player-five-coral.vercel.app",
+//       "http://localhost:5173",
+//     ],
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true,
+//   }),
+// );
+
 app.use(express.json());
+// ✅ Robust CORS config
+const allowedOrigins = [
+  "https://audio-player-five-coral.vercel.app", // your frontend
+  "http://localhost:5173", // local dev
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+  );
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  // ✅ Handle preflight OPTIONS requests manually (important for Render)
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use("/auth", authRoutes);
 

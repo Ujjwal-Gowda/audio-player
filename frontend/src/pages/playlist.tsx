@@ -27,7 +27,7 @@ const Playlist = () => {
 
   const fetchUserTheme = async () => {
     try {
-      const response = await axios.get(API_ENDPOINTS.PROTECTED, {
+      const response = await axios.patch(API_ENDPOINTS.PROTECTED, {
         headers: {
           Authorization: `Bearer ${auth?.token}`,
         },

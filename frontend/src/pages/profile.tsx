@@ -49,7 +49,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        "https://audio-player-058s.onrender.com/user/theme",
+        API_ENDPOINTS.USER_THEME,
         { themePref: newTheme },
         {
           headers: {
