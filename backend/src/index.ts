@@ -26,7 +26,10 @@ const app = express();
 // ✅ Configure CORS properly
 app.use(
   cors({
-    origin: ["audio-player-five-coral.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://audio-player-five-coral.vercel.app",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
