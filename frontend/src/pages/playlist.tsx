@@ -10,7 +10,7 @@ const Playlist = () => {
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const Playlist = () => {
           Authorization: `Bearer ${auth?.token}`,
         },
       });
-      const userTheme = response.data.user.themePref || "light";
+      const userTheme = response.data.user.themePref || "dark";
       setTheme(userTheme);
     } catch (error) {
       console.error("Failed to fetch user theme:", error);

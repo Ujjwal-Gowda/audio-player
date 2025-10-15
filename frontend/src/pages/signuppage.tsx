@@ -18,7 +18,7 @@ const Signup = () => {
     return (
       (document.documentElement.getAttribute("data-theme") as
         | "light"
-        | "dark") || "light"
+        | "dark") || "dark"
     );
   });
 
@@ -26,7 +26,7 @@ const Signup = () => {
     const currentTheme =
       (document.documentElement.getAttribute("data-theme") as
         | "light"
-        | "dark") || "light";
+        | "dark") || "dark";
     setTheme(currentTheme);
   }, []);
 

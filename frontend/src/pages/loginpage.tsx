@@ -3,6 +3,7 @@ import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import { useNavigate, Link } from "react-router-dom";
 import { API_ENDPOINTS } from "../config/api";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,7 +13,7 @@ const Login = () => {
     return (
       (document.documentElement.getAttribute("data-theme") as
         | "light"
-        | "dark") || "light"
+        | "dark") || "darkt"
     );
   });
   const auth = useContext(AuthContext);
@@ -22,7 +23,7 @@ const Login = () => {
     const currentTheme =
       (document.documentElement.getAttribute("data-theme") as
         | "light"
-        | "dark") || "light";
+        | "dark") || "dark";
     setTheme(currentTheme);
   }, []);
 

@@ -24,7 +24,7 @@ const Home = () => {
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
@@ -63,13 +63,13 @@ const Home = () => {
           Authorization: `Bearer ${auth?.token}`,
         },
       });
-      const userTheme = response.data.user.themePref || "light";
+      const userTheme = response.data.user.themePref || "dark";
       setTheme(userTheme);
       document.documentElement.setAttribute("data-theme", userTheme);
     } catch (error) {
       console.error("Failed to fetch user theme:", error);
-      setTheme("light");
-      document.documentElement.setAttribute("data-theme", "light");
+      setTheme("dark");
+      document.documentElement.setAttribute("data-theme", "dark");
     }
   };
 

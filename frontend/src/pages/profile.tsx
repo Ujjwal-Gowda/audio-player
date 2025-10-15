@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import "../styles/profile.css";
+import { API_ENDPOINTS } from "../config/api";
 
 interface UserData {
   name: string;
@@ -23,21 +24,18 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(
-        "https://audio-player-058s.onrender.com/protected",
-        {
-          headers: {
-            Authorization: `Bearer ${auth?.token}`,
-          },
+      const response = await axios.get(API_ENDPOINTS.PROTECTED, {
+        headers: {
+          Authorization: `Bearer ${auth?.token}`,
         },
-      );
+      });
       const user = response.data.user;
       setUserData(user);
 
       // Apply theme from user preferences
       document.documentElement.setAttribute(
         "data-theme",
-        user.themePref || "light",
+        user.themePref || "dark",
       );
     } catch (error) {
       console.error("Failed to fetch user data:", error);

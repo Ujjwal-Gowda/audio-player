@@ -1,24 +1,39 @@
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+/* ✅ Set default theme to dark */
+html {
+    color-scheme: dark;
+}
+
+html[data-theme="dark"],
+html:not([data-theme]) {
+    color-scheme: dark;
+}
+
+html[data-theme="light"] {
+    color-scheme: light;
 }
 
 body {
-  background-color: #242424;
+    background-color: #1a1a2e; /* Dark background */
 }
 
 #root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
