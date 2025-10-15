@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/authcontext";
 import "../styles/profile.css";
-import { API_ENDPOINTS } from "../config/api";
 
 interface UserData {
   name: string;
@@ -24,11 +23,14 @@ const Profile = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(API_ENDPOINTS.PROTECTED, {
-        headers: {
-          Authorization: `Bearer ${auth?.token}`,
+      const response = await axios.get(
+        "https://audio-player-058s.onrender.com/protected",
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
         },
-      });
+      );
       const user = response.data.user;
       setUserData(user);
 
@@ -49,7 +51,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        API_ENDPOINTS.USER_THEME,
+        "https://audio-player-058s.onrender.com/user/theme",
         { themePref: newTheme },
         {
           headers: {
